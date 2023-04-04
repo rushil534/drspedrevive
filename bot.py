@@ -62,6 +62,7 @@ def write_json(data, file_path):
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.presences = True
 bot = commands.Bot(command_prefix = commands.when_mentioned and get_prefix, intents = intents)
 epoch = datetime.datetime.utcfromtimestamp(0)
 bot.remove_command("help")
@@ -3806,14 +3807,16 @@ async def bal(ctx, member: discord.Member):
 
 
 
+@bot.command()
+async def status(ctx, member: discord.Member):
+  await ctx.send(member.status)
+  
+
 #===============
 #===============
 # ERRORS
 #===============
 #===============
-
-
-
 
 
 
@@ -4130,9 +4133,6 @@ async def stream_error(ctx, error):
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to stream again ')
     return
 
-
-
-
 @work.error
 async def work_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
@@ -4141,13 +4141,16 @@ async def work_error(ctx, error):
     return
 
 
+
+f = open("token.txt", "r")
+
 async def load():
-    for filename in os.listdir('./cogs'):
-        if filename.endswith('.py'):
-          await bot.load_extension(f'cogs.{filename[:-3]}')
+  for filename in os.listdir('./cogs'):
+    if filename.endswith('.py'):
+      await bot.load_extension(f'cogs.{filename[:-3]}')
 
 async def main():
-    await load()
-    await bot.start('')
+  await load()
+  await bot.start(f.readline())
             
 asyncio.run(main())
