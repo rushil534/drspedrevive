@@ -546,6 +546,16 @@ async def on_member_join(member):
   else:
     return
 
+@bot.event
+async def on_message(message):
+  if message.author.id == bot.user.id:
+    return
+
+  if str(message.author.id) in bot.blacklisted_users:
+    return
+
+  await bot.process_commands(message)
+
 
 @bot.event
 async def on_command(ctx):
@@ -734,7 +744,7 @@ async def blacklist(ctx, user: discord.Member):
         data["blacklistedUsers"] = []
         
       data["blacklistedUsers"].append(x)
-      write_json(data, "blacklist")
+      write_json(data, "blacklist.json")
       await ctx.send(f'**{user.name}** has been blacklisted')
     else:
       await ctx.send('alr blacklisted')
@@ -4138,6 +4148,6 @@ async def load():
 
 async def main():
     await load()
-    await bot.start('')
+    await bot.start('NjY2ODY3NzE3OTYxMjg1NjYz.GlEwcH.rP9pJRRLr3h87XmRO1y9ElQwg3cxdrneSQjY3Q')
             
 asyncio.run(main())
