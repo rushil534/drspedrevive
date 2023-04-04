@@ -26,10 +26,8 @@ import urllib.parse, urllib.request
 # DARK_GREEN : 0x1F8B4C
 # DARK_BLUE  : 0x206694
 
-random_colors = [0xFFFFFF, 0x1ABC9C, 0x2ECC71, 0x3498DB, 0x9B59B6, 0xE91E63, 0xF1C40F, 0xE67E22, 0xE74C3C, 0x34495E, 0x11806A, 0x1F8B4C, 0x206694]
 
-NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-VOWELS = ["a", "e", "i", "o", "u"]
+#=======================================================================
 
 def get_prefix(bot, message):
   if not message.guild:
@@ -44,12 +42,36 @@ def get_prefix(bot, message):
   prefix = prefixes[str(message.guild.id)]
   return commands.when_mentioned_or(prefix)(bot, message)
 
+def read_json(file_path):
+  try:
+    with open(file_path, "r") as file:
+      data = json.load(file)
+      return data
+  except json.JSONDecodeError:
+    return {}
+  except FileNotFoundError:
+    return {"blacklistedUsers": []}
+    
+def write_json(data, file_path):
+  with open(file_path, "w") as file:
+    if "blacklistedUsers" not in data:
+      data["blacklistedUsers"] = []
+    json.dump(data, file, indent=4)
+
+#=======================================================================
+
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix = commands.when_mentioned and get_prefix, intents = intents)
 epoch = datetime.datetime.utcfromtimestamp(0)
 bot.remove_command("help")
 status = cycle(['le help'])
+
+random_colors = [0xFFFFFF, 0x1ABC9C, 0x2ECC71, 0x3498DB, 0x9B59B6, 0xE91E63, 0xF1C40F, 0xE67E22, 0xE74C3C, 0x34495E, 0x11806A, 0x1F8B4C, 0x206694]
+
+NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+VOWELS = ["a", "e", "i", "o", "u"]
+
 START_BAL     = 100 
 START_HEALTH  = 100
 
@@ -186,32 +208,29 @@ autoMeme = False
 
 bot.blacklisted_users = []
 
-def read_json(filename):
-  with open(f"{filename}.json", "r") as file:
-    data = json.load(file)
-  
-  return data
-
-def write_json(data, filename):
-  with open(f'{filename}.json', 'w') as file:
-    json.dump(data, file, indent = 4)
-
 @tasks.loop(seconds=20)
 async def change_status():
-  await bot.change_presence(status = discord.Status.idle, activity=discord.Game(name="le help"))  
-  #await bot.change_presence(activity=discord.Streaming(name="le help", url="https://www.twitch.tv/ninja"))  
+  await bot.change_presence(status = discord.Status.idle, activity=discord.Game(name="le help"))
+
+
+#======================================================================
+# EVENTS
 
 @bot.event
 async def on_ready():
   change_status.start()
   print(f'{bot.user.name} is ready')
-  global balances, wools, sheeps, rices, wheats, pigs, meats, healths, ambulances, buffalos, stoves, uncooked_chickens, cooked_chickens, salads, morris, douglas, locations, cities, citypop, entertainment_lvl, pc, park_lvl, power_lvl, blacklisted, bread
-  global mooshroom_cows, bowls, mushroom_stew, times_mooshroom, water_lvl, waste_lvl, commands2, levels, exp, health_lvl, allowreactionmessage, personalstring, allowmembermessage, membermessage, channel_id
-  global fire_lvl, police_lvl
+  global balances, wools, sheeps, rices, wheats, pigs, meats, healths, ambulances, buffalos, stoves, uncooked_chickens, cooked_chickens, salads, morris, douglas, locations, cities, citypop, entertainment_lvl, pc, park_lvl, power_lvl, blacklisted, bread, mooshroom_cows, bowls, mushroom_stew, times_mooshroom, water_lvl, waste_lvl, commands2, levels, exp, health_lvl, allowreactionmessage, personalstring, allowmembermessage, membermessage, channel_id, fire_lvl, police_lvl
 
   # data = read_json("blacklist")
   # bot.blacklistedUsers = data["blacklistedUsers"]
   
+  try:
+    data = read_json("blacklist.json")
+    bot.blacklisted_users = data.get("blacklistedUsers", [])
+  except Exception as e:
+    print(e)
+
   try:
     with open(MUSHROOM_STEW_FILE, 'r') as fp: 
       mushroom_stew = json.load(fp) 
@@ -507,11 +526,6 @@ async def on_ready():
     print(f'In on_ready(): File {POLICE_LVL_FILE} not found. Starting off with an empty dictionary')
     police_lvl = {}
 
-# @bot.event
-# async def on_command_error(ctx, error):
-#   if isinstance(error, CommandNotFound):
-#     await ctx.send('thats not a command you bot')
-
 @bot.event
 async def on_member_join(member):
   global membermessage, allowmembermessage, channel_id
@@ -533,14 +547,64 @@ async def on_member_join(member):
     return
 
 
-@bot.command(helpinfo='Searches the web (or images if typed first)', aliases=['search'])
-async def google(ctx, *, searchquery: str):
-  searchquerylower = searchquery.lower()
-  if searchquerylower.startswith('images '):
-    await ctx.send('<https://www.google.com/search?tbm=isch&q={}>'.format(urllib.parse.quote_plus(searchquery[7:])))
-  else:
-    await ctx.send('<https://www.google.com/search?q={}>'.format(urllib.parse.quote_plus(searchquery)))
+@bot.event
+async def on_command(ctx):
+  global commands2
+  global levels, exp
+  user = str(ctx.message.author.id)
+  levels[user] = levels[user] if user in levels else 0
+  exp[user] = exp[user] if user in exp else 0
+  commands2[user] = commands2[user] if user in commands2 else 0
+  commands2[user] += 1
 
+  MAX_XP = levels[user] * 100
+  BEFORE_LEVEL_UP = MAX_XP - 10
+
+
+  if exp[user] == BEFORE_LEVEL_UP:
+    levels[user] += 1
+    exp[user] = 0
+    exp[user] += 10
+  else:
+    if exp[user] < MAX_XP:
+      exp[user] += 10
+    else:
+      levels[user] += 1
+      exp[user] = 0
+      exp[user] += 10
+
+
+
+  try: 
+    with open(COMMANDS_FILE, 'w') as fp: 
+      json.dump(commands2, fp) 
+  except FileNotFoundError: 
+    return
+
+  try: 
+    with open(LEVEL_FILE, 'w') as fp: 
+      json.dump(levels, fp) 
+  except FileNotFoundError: 
+    return
+    
+  try: 
+    with open(EXP_FILE, 'w') as fp: 
+      json.dump(exp, fp) 
+  except FileNotFoundError: 
+    return
+
+
+@bot.event
+async def on_reaction_add(reaction, user):
+  global allowreactionmessage
+  server = str(reaction.message.guild.id)
+  allowreactionmessage[server] = allowreactionmessage[server] if server in allowreactionmessage else 0
+  channel = reaction.message.channel
+  while allowreactionmessage[server] == 1:
+    await channel.send(f'{user.name} reacted with {reaction.emoji} to the message: `{reaction.message.content}`')
+    break
+
+#============================================================================
 
 
 @bot.command()
@@ -561,7 +625,7 @@ async def servers(ctx):
 @bot.command()
 async def slots(ctx):
   parrot = ':parrot:'
-  slotspin = '<:pepe_cry:712063226292076564>'
+  slotspin = ':man_farmer_tone5:'
   slots = [':blue_heart:', ':blue_heart:', ':blue_heart:', ':purple_heart:', ':heart:', ':yellow_heart:', ':green_heart:', ':green_heart:', ':green_heart:', ':green_heart:', ':green_heart:', ':green_heart:']
   slot1 = slots[random.randint(0, 11)]
   slot2 = slots[random.randint(0, 11)]
@@ -657,126 +721,51 @@ async def slots(ctx):
       await msg.edit(content="{}\n {} You Lost".format(slotOutput,ctx.message.author.mention))
 
 @bot.command()
-async def logout(ctx):
-  dev = str(ctx.message.author.id)
-  if dev == '486662307217276948':
-    await ctx.send('done')
-    await bot.logout()
-  else:
-    return
-
-@bot.event
-async def on_command(ctx):
-  global commands2
-  global levels, exp
-  user = str(ctx.message.author.id)
-  levels[user] = levels[user] if user in levels else 0
-  exp[user] = exp[user] if user in exp else 0
-  commands2[user] = commands2[user] if user in commands2 else 0
-  commands2[user] += 1
-
-  MAX_XP = levels[user] * 100
-  BEFORE_LEVEL_UP = MAX_XP - 10
-
-
-  if exp[user] == BEFORE_LEVEL_UP:
-    levels[user] += 1
-    exp[user] = 0
-    exp[user] += 10
-  else:
-    if exp[user] < MAX_XP:
-      exp[user] += 10
-    else:
-      levels[user] += 1
-      exp[user] = 0
-      exp[user] += 10
-
-
-
-  try: 
-    with open(COMMANDS_FILE, 'w') as fp: 
-      json.dump(commands2, fp) 
-  except FileNotFoundError: 
-    return
-
-  try: 
-    with open(LEVEL_FILE, 'w') as fp: 
-      json.dump(levels, fp) 
-  except FileNotFoundError: 
-    return
-    
-  try: 
-    with open(EXP_FILE, 'w') as fp: 
-      json.dump(exp, fp) 
-  except FileNotFoundError: 
-    return
-
-
-@bot.event
-async def on_reaction_add(reaction, user):
-  global allowreactionmessage
-  server = str(reaction.message.guild.id)
-  allowreactionmessage[server] = allowreactionmessage[server] if server in allowreactionmessage else 0
-  channel = reaction.message.channel
-  while allowreactionmessage[server] == 1:
-    await channel.send(f'{user.name} reacted with {reaction.emoji} to the message: `{reaction.message.content}`')
-    break
-
-
-
-@bot.event
-async def on_message(message):
-
-  if message.author.id == bot.user.id:
-    return
-  
-  # if message.author.id in bot.blacklisted_users:
-  #   return
-
-  if message.content.lower() == 'Dr. Sped#9675':
-    embed = discord.Embed(title = "Dr. Sped Command Center", description = 'head into a world full of memes', color = random.choice(random_colors))
-  
-    embed.add_field(name = ':smile: Fun', value = f'`le help fun`')
-
-    embed.add_field(name = ':hammer: Moderation', value = "`le help moderation`")
-
-    embed.add_field(name = ':money_with_wings: Currency', value = "`le help currency`")
-
-    embed.add_field(name = ':alien: Other', value = "`le help other`")
-
-    embed.add_field(name = ':axe: Settings', value = "`le help settings`")
-
-    embed.add_field(name = ':b: Text', value = '`le help text`')
-
-    embed.set_footer(text = 'use `le` before each command!')
-
-    await message.channel.send(embed = embed)
-
-  await bot.process_commands(message)
-
-
-
-@bot.command()
 async def blacklist(ctx, user: discord.Member):
-  if ctx.message.author.id == 486662307217276948 or ctx.message.author.id == 494264415613616157:
-    bot.blacklisted_users.append(user.id)
-    data = read_json("blacklist")
-    data["blacklistedUsers"].append(user.id)
-    write_json(data, "blacklist")
-    await ctx.send(f'**{user.name}** has been blacklisted')
+
+  x = str(user.id)
+
+  if ctx.message.author.id == 486662307217276948:
+    if x not in bot.blacklisted_users:
+      bot.blacklisted_users.append(x)
+      data = read_json("blacklist")
+
+      if "blacklistedUsers" not in data:
+        data["blacklistedUsers"] = []
+        
+      data["blacklistedUsers"].append(x)
+      write_json(data, "blacklist")
+      await ctx.send(f'**{user.name}** has been blacklisted')
+    else:
+      await ctx.send('alr blacklisted')
   else:
-    await ctx.send('only the **OWNER** of this bot can do that lmao')
+    await ctx.send('only owner can do this')
 
 @bot.command()
 async def unblacklist(ctx, user: discord.Member):
-  if ctx.message.author.id == 486662307217276948 or ctx.message.author.id == 494264415613616157:
-    bot.blacklisted_users.remove(user.id)
-    data = read_json("blacklist")
-    data["blacklistedUsers"].remove(user.id)
-    write_json(data, "blacklist")
-    await ctx.send(f'**{user.name}** has been unblacklisted')
+
+  x = str(user.id)
+
+  if ctx.message.author.id == 486662307217276948:
+    if x in bot.blacklisted_users:
+      bot.blacklisted_users.remove(x)
+      data = read_json("blacklist.json")
+
+      if "blacklistedUsers" not in data:
+        data["blacklistedUsers"] = []
+
+      if x in data["blacklistedUsers"]:
+        data["blacklistedUsers"].remove(x)
+        print(f"After: {data}")
+        write_json(data, "blacklist.json")
+        await ctx.send(f'**{user.name}** has been unblacklisted')
+      else:
+        await ctx.send(f'**{user.name}** was never blacklisted')
+    else:
+      await ctx.send(f'**{user.name}** was never blacklisted')
   else:
-    await ctx.send('only the **OWNER** of this bot can do that lmao')
+    await ctx.send(f'only owner can do this')
+
 
 @bot.command(aliases = ['sp'])
 async def setprefix(ctx, *, pre):
@@ -821,31 +810,9 @@ async def resetprefix(ctx):
   with open(r"prefixes.json", 'w') as f:
     json.dump(prefixes, f, indent = 4)
 
-@bot.command(aliases = ['tbg'])
-async def thotsbegone(ctx):
-  await ctx.send('thots')
-  await asyncio.sleep(1.5)
-  await ctx.send('be')
-  await asyncio.sleep(1.5)
-  await ctx.send('**GONE**')
 
-@bot.command()
-async def info(ctx):
-  embed = discord.Embed(title = 'Dr. Sped info', color = random.choice(random_colors))
-
-  embed.add_field(name = 'Library', value = 'discord.py', inline = True)
-
-  embed.add_field(name = 'Creator', value = 'oofma#5318, (13 year old loser)', inline = False)
-
-  embed.add_field(name = 'Version', value = 'v2.12.3', inline = False)
-
-  embed.add_field(name = 'Other Devs', value = 'ya boi got no friends :<', inline = False)
-
-  embed.add_field(name = 'Command Count', value = '102', inline = False)
-
-  embed.add_field(name = 'time it took for that loser of an owner to write this shit bot', value = '9 months, 26 days',inline = False)
-
-  await ctx.send(embed = embed)
+#=============================================================================================================
+#   HELP
 
 @bot.group(invoke_without_command = True, pass_context = True)
 async def help(ctx):
@@ -868,31 +835,23 @@ async def help(ctx):
   await ctx.send(embed = embed)
 
 
-
-
-
 @help.command(name = 'currency')
 async def currency_subcommand(ctx):
-  embed = discord.Embed(title = ":money_with_wings: Currency Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`', color = random.choice(random_colors))
+  embed = discord.Embed(title = ":money_with_wings: Currency Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`, `give`', color = random.choice(random_colors))
   embed.set_footer(text = 'use `le` before each command!')
   await ctx.send(embed = embed)
-
-
-
 
 
 @help.command(name = 'fun')
 async def fun_subcommand(ctx):
-  embed = discord.Embed(title = ":smile: Fun Commands", description = '`redditr8`, `yo`, `meme`, `thotsbegone`, `automemez`, `stopmemez`, `youtube`, `urban`, `supreme`, `reverse`, `dog`, `cat`, `birb`, `duck`, `coinflip`', color = random.choice(random_colors))
+  embed = discord.Embed(title = ":smile: Fun Commands", description = '`fat`, `meme`, `automemez`, `stopmemez`, `youtube`, `urban`, `supreme`, `reverse`, `dog`, `cat`, `birb`, `duck`, `coinflip`', color = random.choice(random_colors))
   embed.set_footer(text = 'use `le` before each command!')
   await ctx.send(embed = embed)
 
 
-
-
 @help.command(name = 'moderation')
 async def mod_subcommand(ctx):
-  embed = discord.Embed(title = ":hammer: Moderation Commands", description = '`kick`, `ban`, `unban`, `purge`, `userinfo`, `warn`, `credits`, `createrole`, `reactionmessage`, `membermessage`, `setmembermessage`, `setchannelid`, `viewmembermessage`, `info`, `autopurge`, `stoppurge`, `new`, `delete`, `lock`, `unlock`', color = random.choice(random_colors))
+  embed = discord.Embed(title = ":hammer: Moderation Commands", description = '`kick`, `ban`, `unban`, `purge`, `userinfo`, `warn`, `createrole`, `changenick`, `reactionmessage`, `membermessage`, `setmembermessage`, `setchannelid`, `viewmembermessage`, `autopurge`, `stoppurge`, `new`, `delete`, `lock`, `unlock`', color = random.choice(random_colors))
   embed.set_footer(text = 'use `le` before each command!')
   await ctx.send(embed = embed)
 
@@ -904,16 +863,11 @@ async def other_subcommand(ctx):
   await ctx.send(embed = embed)
 
 
-
-
 @help.command(name = 'settings')
 async def settings_subcommand(ctx):
   embed = discord.Embed(title = ':axe: Setting Commands', description = '`setprefix`, `resetprefix`', color = random.choice(random_colors))
   embed.set_footer(text = 'use `le` before each command!')
   await ctx.send(embed = embed)
-
-
-
 
 
 @help.command(name = 'text')
@@ -922,51 +876,13 @@ async def text_subcommand(ctx):
   embed.set_footer(text = 'use `le` before each command!')
   await ctx.send(embed = embed)
 
-
-
-
-
-
-
-
+#=============================================================================================================
 
 
 @bot.command()
-async def yo(ctx):
-  await ctx.send(':l')
-
-
-
-
-
-@bot.command()
-async def redditr8(ctx):  
-  embed = discord.Embed(title="reddit r8 determiner", description=f"You are {random.randint(1, 100)}% redditor", color = random.choice(random_colors))
+async def fat(ctx):  
+  embed = discord.Embed(title="fatness determiner", description=f"You are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
   await ctx.send(embed=embed)
-
-# @bot.command(aliases = ['sps'])
-# async def setpersonalstring(ctx, *, string: str):
-#   global personalstring
-#   user = str(ctx.message.author.id)
-#   personalstring[user] = personalstring[user] if user in personalstring else ''
-
-#   await ctx.send(f'String: `{string}` added to dictionary: `personalstring` defined on with open as file, not fp')
-#   personalstring[user] = string
-
-#   print(f'In beg(): Saving balances = {personalstring}')
-#   try: 
-#     with open(PERSONAL_STRING, 'w') as fp: 
-#       json.dump(personalstring, fp) 
-#   except FileNotFoundError: 
-#     print(f'In balances(): File {PERSONAL_STRING} not found! Not sure what to do here!') 
-
-# @bot.command(aliases = ['ps'])
-# async def showpersonalstring(ctx):
-#   global personalstring
-#   user = str(ctx.message.author.id)
-#   personalstring[user] = personalstring[user] if user in personalstring else ''
-  
-#   await ctx.send(f'{personalstring[user]}')
 
 @bot.command(aliases = ['mm'])
 @has_permissions(manage_guild = True)
@@ -1035,12 +951,9 @@ async def setchannelid(ctx, id: int):
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
   channel_id[server] = channel_id[server] if server in channel_id else 0
   
-  if allowmembermessage[server] == 1:
-    if len(str(id)) < 18 or len(str(id)) > 18:
-      await ctx.send('thats not a valid channel id you sped')
-    else:
-      channel_id[server] = id
-      await ctx.send(f'set channel id as: `{id}`')
+  if allowmembermessage[server] == 1:  
+    channel_id[server] = id
+    await ctx.send(f'set channel id as: `{id}`')
   else:
     await ctx.send('if you don\'t have member joining message allowed, how tf u gonna set channel id?\nallow it using `le membermessage`')
 
@@ -1113,36 +1026,16 @@ async def darkhumor(ctx):
 #------------------------   
 
 
-
-
-
-@bot.command()
-async def credits(ctx):
-  await ctx.send('My Creator: bald rat#5318')
-
-
-
-
-
-
-
-    
-
-
-
-
 @bot.command()
 async def guess(ctx):
   await ctx.send('guess a number from 1-10')
   answer = random.randint(1, 10)
   msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author, timeout = 6.0)
 
-
-
   if msg.content.startswith(f'{answer}'):
     await ctx.send('correct, noice')
   else:
-    await ctx.send(f'no stoopid it was **{answer}**')
+    await ctx.send(f'wrong, it was **{answer}**')
 
 
 
@@ -1265,7 +1158,7 @@ async def setbank(ctx, member: discord.Member, amount: int):
     else:
       await ctx.send(f'{member.name} doesn\'t have a bank account')
   else:
-    await ctx.send('AHAAAA you thought only the **OWNER** of this bot can use this ')
+    await ctx.send('only the **OWNER** of this bot can use this ')
 
   print(f'In beg(): Saving balances = {balances}')
   try: 
@@ -1284,7 +1177,7 @@ async def twitch(ctx):
     await ctx.send('whatcha wanna stream today?\n`fortnite`, `minecraft`, `pubg`, or `geo dash`')
     msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
     
-    if msg.content.lower() == 'fortnite' or msg.content.lower() == 'FORTNITE' or msg.content.lower() == 'Fortnite' or msg.content.lower() == 'f' or msg.content.lower() == 'F':
+    if msg.content.lower() == 'fortnite' or msg.content.lower() == 'f':
       CHANCE = random.randint(1, 100)
       if CHANCE < 75 or CHANCE == 75:
         random_coins = random.randint(500, 1000)
@@ -1292,15 +1185,14 @@ async def twitch(ctx):
         balances[user] += random_coins
       else:
         await ctx.send('welp, nobody watched ur stream giving you **0** coins lmaooo')
-    elif msg.content.lower() == 'mc' or msg.content.lower() == 'minecraft' or msg.content.lower() == 'MINECRAFT' or msg.content.lower() == 'Minecraft' or msg.content.lower() == 'MC' or msg.content.lower() == 'Mc' or msg.content.lower() == 'm' or msg.content.lower() == 'M':
-      CHANCE = random.randint(1, 100)
+    elif msg.content.lower() == 'mc' or msg.content.lower() == 'minecraft':
       if CHANCE < 75 or CHANCE == 75:
         random_coins = random.randint(500, 1000)
         await ctx.send(f'you streamed sum mc and turns out people actually liked it\nyou earned **{random_coins}** coins')
         balances[user] += random_coins
       else:
         await ctx.send('welp, nobody watched ur stream giving you **0** coins lmaooo')
-    elif msg.content.lower() == 'pubg' or msg.content.lower() == 'PUBG' or msg.content.lower() == 'Pubg' or msg.content.lower() == 'p' or msg.content.lower() == 'P':
+    elif msg.content.lower() == 'pubg' or msg.content.lower() == 'p':
       CHANCE = random.randint(1, 100)
       if CHANCE < 75 or CHANCE == 75:
         random_coins = random.randint(500, 1000)
@@ -1308,7 +1200,7 @@ async def twitch(ctx):
         balances[user] += random_coins
       else:
         await ctx.send('welp, nobody watched ur stream giving you **0** coins lmaooo')
-    elif msg.content.lower() == 'geo' or msg.content.lower() == 'geo dash' or msg.content.lower() == 'Geo dash' or msg.content.lower() == 'geo Dash' or msg.content.lower() == 'GEO DASH' or msg.content.lower() == 'gd' or msg.content.lower() == 'GD' or msg.content.lower() == 'Gd':
+    elif msg.content.lower() == 'geo' or msg.content.lower() == 'geo dash' or msg.content.lower() == 'gd':
       CHANCE = random.randint(1, 100)
       if CHANCE < 75 or CHANCE == 75:
         random_coins = random.randint(500, 1000)
@@ -1480,21 +1372,13 @@ async def parks(ctx):
         else:
           await ctx.send('You don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
-        msg = await ctx.send('Cancelling purchase')
-        await asyncio.sleep(0.7)
-        await msg.edit(content = 'Cancelling purchase.')
-        await asyncio.sleep(0.7)
-        await msg.edit(content = 'Cancelling purchase..')
-        await asyncio.sleep(0.7)
-        await msg.edit(content = 'Cancelling purchase...')
-        await asyncio.sleep(0.7)
-        await msg.edit(content = 'Done')
+        await ctx.send('ok')
       else:
-        await ctx.send('not an option ')
+        await ctx.send('not an option')
     else:
       await ctx.send('You have reached the maximum level for parks!')
   else:
-    await ctx.send('u don\'t have a city ')
+    await ctx.send('u don\'t have a city')
 
   print(f'In sell(): Saving salads = {salads}')
   try: 
@@ -2614,13 +2498,13 @@ async def create(ctx):
           cities[user] += 1
           citypop[user] = 0
         else:
-          await ctx.send(' get more money')
+          await ctx.send('get more money')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
-        await ctx.send('alri no city for u')
+        await ctx.send('alr no city for u')
       else:
-        await ctx.send('not an option ')
+        await ctx.send('not an option')
     else:
-      await ctx.send('don\'t you already have a city my guy?')
+      await ctx.send('don\'t you already have a city?')
   else:
     await ctx.send('You must be in Texas to create a city!')
 
@@ -2744,11 +2628,6 @@ async def profile(ctx, member: discord.Member):
     embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
     embed.add_field(name = '\nMediocre Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
     await ctx.send(embed = embed)
-  elif levels[user] in range(26, 101):
-    embed = discord.Embed(title = f'{member.name}\'s Profile', color = random.choice(random_colors))
-    embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
-    embed.add_field(name = '\nUltimate Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
-    await ctx.send(embed = embed)
   else:
     embed = discord.Embed(title = f'{member.name}\'s Profile', color = random.choice(random_colors))
     embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
@@ -2776,7 +2655,7 @@ async def grab(ctx):
 
 
 @bot.command()
-async def give(ctx, amount: int, member: discord.Member):
+async def give(ctx, member: discord.Member, amount: int):
   global balances
 
   primary_id = str(ctx.message.author.id)
@@ -2787,7 +2666,7 @@ async def give(ctx, amount: int, member: discord.Member):
     await ctx.send("The other party does not have an account")
   elif balances[primary_id] < amount:
     await ctx.send("You cannot afford this transaction")
-  elif member is ctx.message.author:
+  elif member == ctx.message.author:
     await ctx.send('r u rlly going to try to give urself coins')
   else:
     balances[primary_id] -= amount
@@ -3838,15 +3717,6 @@ async def buy(ctx, arg, amount: int):
 async def health(ctx):
   global healths, HEALTH_FILE
   user = str(ctx.message.author.id)
-
-  #-------------------------------------
-  try:
-    with open(HEALTH_FILE, 'r') as fp: 
-      healths = json.load(fp) 
-  except FileNotFoundError:
-    print(f'In on_ready(): File {HEALTH_FILE} not found. Starting off with an empty balances dictionary.') 
-    health = {} 
-  #-------------------------------------
   
   print(f'In health(): Author Id = {ctx.message.author.id}, Author Name = {user}')
   if user in healths:
@@ -3876,15 +3746,6 @@ async def plead(ctx):
   INCREMENT = random.randint(20, 70)
   user = str(ctx.message.author.id) 
   print(f'In plead(): Author Id = {ctx.message.author.id}, Author Name = {user}')
-
-  #-------------------------------------
-  try:
-    with open(BALANCES_FILE, 'r') as fp: 
-      balances = json.load(fp) 
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BALANCES_FILE} not found. Starting off with an empty balances dictionary.') 
-    balances = {} 
-  #-------------------------------------
 
   if user in balances: 
     # print(f'In plead(): Found record for {user}. Incrementing balance by {random.randint(20,70)}')
@@ -3925,15 +3786,6 @@ async def bal(ctx, member: discord.Member):
   global balances, START_BAL 
   user = str(ctx.message.author.id)
   member2 = str(member.id)
-
-  #-------------------------------------
-  try:
-    with open(BALANCES_FILE, 'r') as fp: 
-      balances = json.load(fp) 
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BALANCES_FILE} not found. Starting off with an empty balances dictionary.') 
-    balances = {} 
-  #-------------------------------------
   
   if member2 in balances:
     embed = discord.Embed(title=f":moneybag: {member.name}'s balance", description=f"**Bank Account**: {balances[member2]:,d}/ꝏ", color = random.choice(random_colors))
@@ -4286,6 +4138,6 @@ async def load():
 
 async def main():
     await load()
-    await bot.start('x')
+    await bot.start('')
             
 asyncio.run(main())
