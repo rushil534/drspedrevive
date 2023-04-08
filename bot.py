@@ -11,6 +11,7 @@ from discord.ext.commands import has_permissions
 import aiohttp
 import re
 import urllib.parse, urllib.request
+from operator import itemgetter
 
 # WHITE      : 0xFFFFFF
 # AQUA       : 0x1ABC9C
@@ -65,6 +66,7 @@ def write_json(data, file_path):
 intents = discord.Intents.default()
 intents.message_content = True
 intents.presences = True
+intents.members = True
 bot = commands.Bot(command_prefix = commands.when_mentioned and get_prefix, intents = intents)
 epoch = datetime.datetime.utcfromtimestamp(0)
 bot.remove_command("help")
@@ -540,7 +542,7 @@ async def on_member_join(member):
       if channel_id[server] == 0:
         return
       else:
-        channel = bot.get_channel(channel_id[server])
+        channel = bot.fetch_channel(channel_id[server])
         await channel.send(f'{member.mention}, {membermessage[server]}')
   else:
     return
@@ -551,9 +553,7 @@ async def on_message(message):
     return
 
   if str(message.author.id) in bot.blacklisted_users:
-    return
-
-  
+    return  
 
   await bot.process_commands(message)
 
@@ -611,8 +611,6 @@ async def on_reaction_add(reaction, user):
     break
 
 #============================================================================
-
-
 
 @bot.command()
 async def slots(ctx):
@@ -760,10 +758,10 @@ async def unblacklist(ctx, user: discord.Member):
 
 @bot.command(aliases = ['sp'])
 async def setprefix(ctx, *, pre):
-
   await ctx.send('Would you like a space after the prefix?\nEx: [prefix] meme\n`y` or `n`')
   msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-  if msg.content.lower() == 'Y' or msg.content.lower() == 'y': 
+
+  if msg.content.lower() == 'y': 
     with open(r"prefixes.json", 'r') as f:
       prefixes = json.load(f)
 
@@ -807,73 +805,120 @@ async def resetprefix(ctx):
 
 @bot.group(invoke_without_command = True, pass_context = True)
 async def help(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   embed = discord.Embed(title = "Dr. Sped Command Center", description = 'head into a world full of memes', color = random.choice(random_colors))
   
-  embed.add_field(name = ':smile: Fun', value = f'`le help fun`', inline = True)
+  embed.add_field(name = ':smile: Fun', value = f'`{x}help fun`', inline = True)
 
-  embed.add_field(name = ':hammer: Moderation', value = "`le help moderation`", inline = False)
+  embed.add_field(name = ':hammer: Moderation', value = f"`{x}help moderation`", inline = False)
 
-  embed.add_field(name = ':money_with_wings: Currency', value = "`le help currency`", inline = False)
+  embed.add_field(name = ':money_with_wings: Currency', value = f"`{x}help currency`", inline = False)
 
-  embed.add_field(name = ':alien: Other', value = "`le help other`", inline = False)
+  embed.add_field(name = ':alien: Other', value = f"`{x}help other`", inline = False)
 
-  embed.add_field(name = ':axe: Settings', value = "`le help settings`", inline = False)
+  embed.add_field(name = ':axe: Settings', value = f"`{x}help settings`", inline = False)
 
-  embed.add_field(name = ':b: Text', value = '`le help text`', inline = False)
+  embed.add_field(name = ':b: Text', value = f'`{x}help text`', inline = False)
 
-  embed.set_footer(text = 'use `le` before each command!')
+  embed.set_footer(text = f'use `{x}` before each command!')
 
   await ctx.send(embed = embed)
 
 
 @help.command(name = 'currency')
 async def currency_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   embed = discord.Embed(title = ":money_with_wings: Currency Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`, `give`', color = random.choice(random_colors))
-  embed.set_footer(text = 'use `le` before each command!')
+  embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
 
 @help.command(name = 'fun')
 async def fun_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   embed = discord.Embed(title = ":smile: Fun Commands", description = '`fat`, `meme`, `automemez`, `stopmemez`, `youtube`, `urban`, `supreme`, `reverse`, `dog`, `cat`, `birb`, `duck`, `coinflip`', color = random.choice(random_colors))
-  embed.set_footer(text = 'use `le` before each command!')
+  embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
 
 @help.command(name = 'moderation')
 async def mod_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   embed = discord.Embed(title = ":hammer: Moderation Commands", description = '`kick`, `ban`, `unban`, `purge`, `userinfo`, `warn`, `createrole`, `changenick`, `reactionmessage`, `membermessage`, `setmembermessage`, `setchannelid`, `viewmembermessage`, `autopurge`, `stoppurge`, `new`, `delete`, `lock`, `unlock`', color = random.choice(random_colors))
-  embed.set_footer(text = 'use `le` before each command!')
+  embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
 
 @help.command(name = 'other')
 async def other_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   embed = discord.Embed(title = ':alien: Other Commands', description = '`mainstuff`, `dmdev`', color = random.choice(random_colors))
-  embed.set_footer(text = 'use `le` before each command!')
+  embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
 
 @help.command(name = 'settings')
 async def settings_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   embed = discord.Embed(title = ':axe: Setting Commands', description = '`setprefix`, `resetprefix`', color = random.choice(random_colors))
-  embed.set_footer(text = 'use `le` before each command!')
+  embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
 
 @help.command(name = 'text')
 async def text_subcommand(ctx):
-  embed = discord.Embed(title = ':b: Text Commands', description = '`greenify`, `bify`, `echo`, `ubi`, `underline`, `bold`, `italics`, `codeblock`, `strikethrough`, `underlineitalics`, `underlinebold`, `bolditalics`', color = random.choice(random_colors))
-  embed.set_footer(text = 'use `le` before each command!')
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ':b: Text Commands', description = '`bify`, `echo`, `ubi`, `underline`, `bold`, `italics`, `codeblock`, `strikethrough`, `underlineitalics`, `underlinebold`, `bolditalics`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
 #=============================================================================================================
 
 
 @bot.command()
-async def fat(ctx):  
-  embed = discord.Embed(title="fatness determiner", description=f"You are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
-  await ctx.send(embed=embed)
+async def fat(ctx, member: discord.Member = None):
+  if member is None:
+    embed = discord.Embed(title="fatness determiner", description=f"You are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
+    await ctx.send(embed=embed)
+  else:
+    embed = discord.Embed(title="fatness determiner", description=f"{member.name} is {random.randint(1, 100)}% fat", color = random.choice(random_colors))
+    await ctx.send(embed=embed)
+  
 
 @bot.command(aliases = ['mm'])
 @has_permissions(manage_guild = True)
@@ -881,6 +926,7 @@ async def membermessage(ctx):
   global allowmembermessage
   server = str(ctx.guild.id)
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
+
   if allowmembermessage[server] == 0:
     await ctx.send('Sending messages when a member joins is set to: **True**\nCustomize the message in `le setmembermessage`')
     allowmembermessage[server] = 1
@@ -3726,8 +3772,66 @@ async def health(ctx):
   except FileNotFoundError: 
    print(f'In beg(): File {HEALTH_FILE} not found! Not sure what to do here!') 
 
+@bot.command(aliases = ['lb'])
+async def leaderboard(ctx):
+  global balances
 
+  await ctx.send('do you want the leaderboard for this server\'s members or every member? \ntype `server` for this server and `global` for every member')
+  msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
 
+  if msg.content.lower() == 'server': 
+    guild_members = ctx.guild.members
+    guild_balances = {}
+    
+    for member in guild_members:
+      if str(member.id) in balances:
+        guild_balances[member.id] = balances[str(member.id)]
+
+    sorted_balances = dict(sorted(guild_balances.items(), key=itemgetter(1), reverse=True)[:3])
+    first_place = None
+    second_place = None
+    third_place = None
+
+    for member_id, balance in sorted_balances.items():
+      member = await bot.fetch_user(member_id)
+      if first_place is None:
+        first_place = f"{member.name}#{member.discriminator}"
+        first_balance = balance
+      elif second_place is None:
+        second_place = f"{member.name}#{member.discriminator}"
+        second_balance = balance
+      elif third_place is None:
+        third_place = f"{member.name}#{member.discriminator}"
+        third_balance = balance
+
+    await ctx.send(f"First place: {first_place} with {first_balance} coins")
+    await ctx.send(f"Second place: {second_place} with {second_balance} coins")
+    await ctx.send(f"Third place: {third_place} with {third_balance} coins")
+
+  elif msg.content.lower() == 'global': 
+
+    sorted_balances = dict(sorted(balances.items(), key=itemgetter(1), reverse=True)[:3])
+    first_place = None
+    second_place = None
+    third_place = None
+
+    for member_id, balance in sorted_balances.items():
+      member = await bot.fetch_user(member_id)
+      if first_place is None:
+        first_place = f"{member.name}#{member.discriminator}"
+        first_balance = balance
+      elif second_place is None:
+        second_place = f"{member.name}#{member.discriminator}"
+        second_balance = balance
+      elif third_place is None:
+        third_place = f"{member.name}#{member.discriminator}"
+        third_balance = balance
+
+    await ctx.send(f"First place: {first_place} with {first_balance} coins")
+    await ctx.send(f"Second place: {second_place} with {second_balance} coins")
+    await ctx.send(f"Third place: {third_place} with {third_balance} coins")
+  else:
+    await ctx.send("not an option; rerun the command")
 
 
 @bot.command(name = 'plead')
@@ -3740,18 +3844,8 @@ async def plead(ctx):
 
   if user in balances: 
     # print(f'In plead(): Found record for {user}. Incrementing balance by {random.randint(20,70)}')
-    responses = [
-      f"**Detective Dank** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**David Dobrik** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Pewdiepie** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Kylie Jenner** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Ur Mom** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Kanye West** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Markiplier** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Mojang** donated {INCREMENT} coins to {ctx.message.author.mention}!",
-      f"**Jesus** donated {INCREMENT} coins to {ctx.message.author.mention}!"
-    ]
-    await ctx.send(random.choice(responses))
+    names = ["**Kanye West**", "**Lindsay Lohan**", "**Azealia Banks**", "**Justin Bieber**", "**Roseanne Barr**", "**Charlie Sheen**", "**Amanda Bynes**", "**Woody Allen**", "**Mel Gibson**", "**R. Kelly**"]
+    await ctx.send(random.choice(names) + f' donated {INCREMENT} coins to {ctx.message.author.mention}!')
     balances[user] += INCREMENT
   else: 
     print(f'In plead(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
@@ -3763,32 +3857,31 @@ async def plead(ctx):
     with open(BALANCES_FILE, 'w') as fp: 
       json.dump(balances, fp) 
   except FileNotFoundError: 
-    print(f'In beg(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+    print(f'In beg(): File {BALANCES_FILE} not found! Not sure what to do here!')
 
-
-  
-
-
-
-
-
-@bot.command(name = 'bal', aliases = ['balance', 'coins', 'money'])
-async def bal(ctx, member: discord.Member): 
+@bot.command(name = 'bal')
+async def bal(ctx, member: discord.Member = None): 
   global balances, START_BAL 
   user = str(ctx.message.author.id)
-  member2 = str(member.id)
-  
-  if member2 in balances:
-    embed = discord.Embed(title=f":moneybag: {member.name}'s balance", description=f"**Bank Account**: {balances[member2]:,d}/ꝏ", color = random.choice(random_colors))
-
-    await ctx.send(embed=embed)
+  if member is None:
+    if user in balances:
+      embed = discord.Embed(title=f":moneybag: {ctx.message.author.name}'s balance", description=f"**Bank Account**: {balances[user]:,d}/ꝏ", color = random.choice(random_colors))
+      await ctx.send(embed=embed)
+    else:
+      balances[user] = 100
+      await ctx.send('You didnt have an account so i made you one with a start of 100 coins')
   else:
-    await ctx.send('that user does not have a bank account')
-
-
+    if str(member.id) in balances:
+      embed = discord.Embed(title=f":moneybag: {member.name}'s balance", description=f"**Bank Account**: {balances[str(member.id)]:,d}/ꝏ", color = random.choice(random_colors))
+      await ctx.send(embed=embed)
+    else:
+      await ctx.send('user doesn\'t have an acc')
 
 @bot.command()
-async def status(ctx, member: discord.Member):
+async def status(ctx, member: discord.Member = None):
+  if member is None:
+    member = ctx.message.author
+
   await ctx.send(member.status)
   
 
@@ -3828,7 +3921,6 @@ async def youtube_error(ctx, error):
 async def use_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `le use [item]`')
-
 
 @setmembermessage.error
 async def setmembermessage_error(ctx, error):
@@ -3982,18 +4074,6 @@ async def profile_error(ctx, error):
       embed.add_field(name = '\nUltimate Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
       await ctx.send(embed = embed)
 
-@bal.error
-async def bal_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    user = str(ctx.message.author.id)
-    if user in balances:
-      embed = discord.Embed(title=f":moneybag: {ctx.message.author.name}'s balance", description=f"**Bank Account**: {balances[user]:,d}/ꝏ", color = random.choice(random_colors))
-
-      await ctx.send(embed=embed)
-    else:
-      balances[user] = 100
-      await ctx.send('You didnt have an account so i made you one with a start of 100 coins')
-
 @setprefix.error
 async def setprefix_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
@@ -4079,9 +4159,6 @@ async def grab_error(ctx, error):
     return
 
 
-
-
-
 @cook.error
 async def cook_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
@@ -4092,18 +4169,12 @@ async def cook_error(ctx, error):
     await ctx.send('Proper Usage: `le cook [chicken]`')
 
 
-
-
-
 @plead.error
 async def plead_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
     m, s = divmod(error.retry_after, 60)
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to plead again ')
     return
-
-
-
 
 
 @twitch.error
