@@ -56,7 +56,9 @@ def write_json(data, file_path):
   with open(file_path, "w") as file:
     if "blacklistedUsers" not in data:
       data["blacklistedUsers"] = []
-    json.dump(data, file, indent=4)
+
+    data["blacklistedUsers"] = list(set(data["blacklistedUsers"]))
+    json.dump(data, file, indent = 4)
 
 #=======================================================================
 
@@ -213,7 +215,6 @@ bot.blacklisted_users = []
 async def change_status():
   await bot.change_presence(status = discord.Status.idle, activity=discord.Game(name="le help"))
 
-
 #======================================================================
 # EVENTS
 
@@ -222,9 +223,6 @@ async def on_ready():
   change_status.start()
   print(f'{bot.user.name} is ready')
   global balances, wools, sheeps, rices, wheats, pigs, meats, healths, ambulances, buffalos, stoves, uncooked_chickens, cooked_chickens, salads, morris, douglas, locations, cities, citypop, entertainment_lvl, pc, park_lvl, power_lvl, blacklisted, bread, mooshroom_cows, bowls, mushroom_stew, times_mooshroom, water_lvl, waste_lvl, commands2, levels, exp, health_lvl, allowreactionmessage, personalstring, allowmembermessage, membermessage, channel_id, fire_lvl, police_lvl
-
-  # data = read_json("blacklist")
-  # bot.blacklistedUsers = data["blacklistedUsers"]
   
   try:
     data = read_json("blacklist.json")
@@ -555,6 +553,8 @@ async def on_message(message):
   if str(message.author.id) in bot.blacklisted_users:
     return
 
+  
+
   await bot.process_commands(message)
 
 
@@ -571,20 +571,15 @@ async def on_command(ctx):
   MAX_XP = levels[user] * 100
   BEFORE_LEVEL_UP = MAX_XP - 10
 
-
   if exp[user] == BEFORE_LEVEL_UP:
     levels[user] += 1
-    exp[user] = 0
-    exp[user] += 10
+    exp[user] = 10
   else:
     if exp[user] < MAX_XP:
       exp[user] += 10
     else:
       levels[user] += 1
-      exp[user] = 0
-      exp[user] += 10
-
-
+      exp[user] = 10
 
   try: 
     with open(COMMANDS_FILE, 'w') as fp: 
@@ -616,20 +611,6 @@ async def on_reaction_add(reaction, user):
     break
 
 #============================================================================
-
-
-@bot.command()
-async def servers(ctx):
-  servers = bot.guilds
-  servers.sort(key=lambda x: x.member_count, reverse=True)
-  await ctx.send('***Top servers with Dr. Sped:***')
-  for x in servers[:5]:
-    async with ctx.channel.typing():
-      await ctx.send('**{}**, **{}** Members, {} region, Owned by <@{}>, Created at {}\n{}'.format(x.name, x.member_count, x.region, x.owner_id, x.created_at, x.icon_url_as(format='png',size=32)))
-  y = 0
-  for x in  bot.guilds:
-    y += x.member_count
-  await ctx.send('**Total number of Dr. Sped users:** ***{}***!\n**Number of servers:** ***{}***!'.format(y, len(bot.guilds)))
 
 
 
@@ -736,10 +717,10 @@ async def blacklist(ctx, user: discord.Member):
 
   x = str(user.id)
 
-  if ctx.message.author.id == 486662307217276948:
+  if str(ctx.message.author.id) == "707091184115253248":
     if x not in bot.blacklisted_users:
       bot.blacklisted_users.append(x)
-      data = read_json("blacklist")
+      data = read_json("blacklist.json")
 
       if "blacklistedUsers" not in data:
         data["blacklistedUsers"] = []
@@ -757,7 +738,7 @@ async def unblacklist(ctx, user: discord.Member):
 
   x = str(user.id)
 
-  if ctx.message.author.id == 486662307217276948:
+  if str(ctx.message.author.id) == "707091184115253248":
     if x in bot.blacklisted_users:
       bot.blacklisted_users.remove(x)
       data = read_json("blacklist.json")
@@ -767,7 +748,6 @@ async def unblacklist(ctx, user: discord.Member):
 
       if x in data["blacklistedUsers"]:
         data["blacklistedUsers"].remove(x)
-        print(f"After: {data}")
         write_json(data, "blacklist.json")
         await ctx.send(f'**{user.name}** has been unblacklisted')
       else:
@@ -1162,7 +1142,7 @@ async def setbank(ctx, member: discord.Member, amount: int):
   global balances
   user = str(ctx.message.author.id)
   member2 = str(member.id)
-  if user == '486662307217276948':
+  if user == '707091184115253248':
     if member2 in balances:
       balances[member2] = amount
       await ctx.send(f'{member.name}\'s bank account value has been set to : **{amount}**')
