@@ -1,5 +1,5 @@
 # mrmorale
-a general purpose discord bot with moderation, text-altering, and fun commands
+a general purpose discord bot with moderation, text-altering, and fun commands\n
 has an advanced economy system where user can own their own farm, shop and sell items, and even maintain their own city
 
 # Bot Invite
