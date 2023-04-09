@@ -801,6 +801,140 @@ async def resetprefix(ctx):
 
 
 #=============================================================================================================
+# SELL
+
+@bot.group(pass_context = True)
+async def sell(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `sell [item] [amount]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"you can only sell **wheat**, **wool**, or **meat**")
+
+@sell.command(name = 'wheat', aliases = ['wheats'])
+async def wheat_subcommand(ctx, amount: int = None):
+  global wheats, balances
+  user = str(ctx.message.author.id)
+  wheats[user] = wheats[user] if user in wheats else 0
+  balances[user] = balances[user] if user in balances else 0
+  
+  if amount is None:
+    amount = 1
+  
+  if amount <= 0:
+    await ctx.send("rerun the command with a value above 0")
+    return
+
+  if user in wheats:
+    if wheats[user] >= amount:
+      crypto_for_selling_wheat = amount * 10
+      wheats[user] -= amount
+      balances[user] += crypto_for_selling_wheat
+      embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_wheat} coins` for selling **{amount}** wheat', color = random.choice(random_colors))
+      await ctx.send(embed = embed)
+    else:
+      await ctx.send('you don\'t have enough wheat for that lmao')
+  else:
+    await ctx.send('you have no wheat at all')
+
+  print(f'In sell(): Saving wheats = {wheats}')
+  try: 
+    with open(WHEAT_FILE, 'w') as fp: 
+      json.dump(wheats, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {WHEAT_FILE} not found! Not sure what to do here!') 
+  
+  print(f'In sell(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+
+@sell.command(name = 'wool', aliases = ['wools'])
+async def wool_subcommand(ctx, amount: int = None):
+  global wools, balances
+  user = str(ctx.message.author.id)
+  wools[user] = wools[user] if user in wools else 0
+  balances[user] = balances[user] if user in balances else 0
+  
+  if amount is None:
+    amount = 1
+  
+  if amount <= 0:
+    await ctx.send("rerun the command with a value above 0")
+    return
+  
+  if user in wools:
+    if wools[user] >= amount:
+      crypto_for_selling_wool = amount * 15
+      wools[user] -= amount
+      balances[user] += crypto_for_selling_wool
+      embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_wool} coins` for selling **{amount}** wool', color = random.choice(random_colors))
+      await ctx.send(embed = embed)
+    else:
+      await ctx.send('you don\'t have enough wool for that lmao')
+  else:
+    await ctx.send('you have no wool at all')
+  
+  print(f'In sell(): Saving wool = {wools}')
+  try: 
+    with open(WOOL_FILE, 'w') as fp: 
+      json.dump(wools, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {WOOL_FILE} not found! Not sure what to do here!') 
+
+  print(f'In sell(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+@sell.command(name = 'meat', aliases = ['meats'])
+async def meat_subcommand(ctx, amount: int = None):
+  global meats, balances
+  user = str(ctx.message.author.id)
+  meats[user] = meats[user] if user in meats else 0
+  balances[user] = balances[user] if user in balances else 0
+  
+  if amount is None:
+    amount = 1
+  
+  if amount <= 0:
+    await ctx.send("rerun the command with a value above 0")
+    return
+  
+  if user in meats:
+    if meats[user] >= amount:
+      crypto_for_selling_meat = amount * 25
+      meats[user] -= amount
+      balances[user] += crypto_for_selling_meat
+      embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_meat} coins` for selling **{amount}** meat', color = random.choice(random_colors))
+      await ctx.send(embed = embed)
+    else:
+      await ctx.send('you don\'t have enough meat for that lmao')
+  else:
+    await ctx.send('you have no meat at all')
+
+  print(f'In sell(): Saving meats = {meats}')
+  try: 
+    with open(MEAT_FILE, 'w') as fp: 
+      json.dump(meats, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {MEAT_FILE} not found! Not sure what to do here!') 
+
+  print(f'In sell(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+#=============================================================================================================
+
+
+#=============================================================================================================
 # BUY
 
 @bot.group(pass_context = True)
@@ -3085,34 +3219,37 @@ async def farm(ctx):
 
 
 @bot.command()
-async def profile(ctx, member: discord.Member):
+async def profile(ctx, member: discord.Member = None):
   global commands2, levels, exp
+
+  if member is None:
+    member = ctx.message.author
+  
   user = str(member.id)
   commands2[user] = commands2[user] if user in commands2 else 0
   exp[user] = exp[user] if user in exp else 0
   levels[user] = levels[user] if user in levels else 0
-  
+
   if levels[user] in range(0, 6):
     embed = discord.Embed(title = f'{member.name}\'s Profile', color = random.choice(random_colors))
-    embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
+    embed.add_field(name = 'Commands Invoked', value = f'{commands2[user]}', inline = True)
     embed.add_field(name = '\nLow Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
     await ctx.send(embed = embed)
   elif levels[user] in range(6, 16):
     embed = discord.Embed(title = f'{member.name}\'s Profile', color = random.choice(random_colors))
-    embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
+    embed.add_field(name = 'Commands Invoked', value = f'{commands2[user]}', inline = True)
     embed.add_field(name = '\nSped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
     await ctx.send(embed = embed)
   elif levels[user] in range(16, 26):
     embed = discord.Embed(title = f'{member.name}\'s Profile', color = random.choice(random_colors))
-    embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
+    embed.add_field(name = 'Commands Invoked', value = f'{commands2[user]}', inline = True)
     embed.add_field(name = '\nMediocre Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
     await ctx.send(embed = embed)
   else:
     embed = discord.Embed(title = f'{member.name}\'s Profile', color = random.choice(random_colors))
-    embed.add_field(name = '\nRandom', value = f'<:pepe_cry:712063226292076564> Commands invoked: {commands2[user]}', inline = True)
+    embed.add_field(name = 'Commands Invoked', value = f'{commands2[user]}', inline = True)
     embed.add_field(name = '\nUltimate Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
     await ctx.send(embed = embed)
-
 
 @bot.command()
 @commands.cooldown(1, 600, commands.BucketType.user)
@@ -3171,8 +3308,8 @@ async def work(ctx):
   global balances
   balances[user] = balances[user] if user in balances else 0
 
-  random_work_shet = ['chop 10 wood', 'deliver chicken leg :b:is\nthe :b: counts btw', 'repost 4 memes', 'assassinate trump', 'rate tiktok 1 star on the app store', 'cook 12 meals']
-  answer = random.choice(random_work_shet)
+  actions = [    'clean the kitchen',    'wash 10 dishes',    'vacuum the living room',    'sweep the garage',    'mop the bathroom',    'scrub the toilet',    'dust the furniture',    'organize the closet',    'water the plants',    'mow the lawn',    'rake the leaves',    'trim the hedges',    'plant a garden',    'paint a room',    'install a shelf',    'assemble a piece of furniture',    'fix a leaky faucet',    'unclog a drain',    'change a lightbulb',    'clean the gutters',    'wash the car',    'detail the car',    'cut firewood',    'shovel snow',    'rake the roof',    'clean the pool',    'repair a fence',    'build a birdhouse',    'sew a patch on clothes',    'knit a scarf',    'bake a cake',    'cook a meal',    'make a smoothie',    'brew coffee',    'write a poem',    'paint a picture',    'play an instrument',    'read a book',    'watch a movie',    'learn a new language',    'exercise for 30 minutes',    'meditate for 10 minutes',    'call a friend',    'write a thank-you note',    'volunteer at a charity',    'donate to a cause',    'attend a lecture',    'take a class',    'learn a new skill',    'plan a trip',    'organize your finances',    'start a blog',    'create a budget',    'do your taxes',    'file paperwork',    'clean your computer',    'back up your files']
+  answer = random.choice(actions)
   msg2 = await ctx.send(f'{ctx.message.author.mention}, do the work by typing it!\n**{answer}**')
   await msg2.edit()
   msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
@@ -3508,99 +3645,6 @@ async def pig(ctx):
       json.dump(healths, fp) 
   except FileNotFoundError: 
     print(f'In sell(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-
-
-
-
-@bot.command()
-async def sell(ctx, arg, amount: int):
-  global balances, START_BAL, meats, wools, wheats
-  user = str(ctx.message.author.id)
-  if arg == "wheats" or arg == "wheat":
-    if user in wheats:
-      if user in balances:
-        if wheats[user] > amount or wheats[user] == amount:
-          balances[user] = balances[user] if user in balances else 0
-          wheats[user] = wheats[user] if user in wheats else 0
-          crypto_for_selling_wheat = amount * 10
-          wheats[user] -= amount
-          balances[user] += crypto_for_selling_wheat
-          embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_wheat} coins` for selling **{amount}** wheat', color = random.choice(random_colors))
-          await ctx.send(embed = embed)
-        else:
-          await ctx.send('um i don\'t think you have enough wheat for that **SCAMMER**')
-      else:
-        print(f'In buy(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
-        balances[user] = START_BAL 
-        await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {START_BAL}') 
-    else:
-      await ctx.send('you don\'t have any wheat with you')
-  elif arg == "wool" or arg == "wools":
-    if user in wools:
-      if user in balances:
-        if wools[user] > amount or wools[user] == amount:
-          balances[user] = balances[user] if user in balances else 0
-          wools[user] = wools[user] if user in wools else 0
-          crypto_for_selling_wool = amount * 15
-          wools[user] -= amount
-          balances[user] += crypto_for_selling_wool
-          embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_wool} coins` for selling **{amount}** wool', color = random.choice(random_colors))
-          await ctx.send(embed = embed)
-        else:
-          await ctx.send('um i don\'t think you have enough wool for that **SCAMMER**')
-      else:
-        print(f'In buy(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
-        balances[user] = START_BAL 
-        await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {START_BAL}') 
-    else:
-      await ctx.send('you don\'t have any wool with you')
-  elif arg == "meat" or arg == "meats":
-    if user in meats:
-      if user in balances:
-        if meats[user] > amount or meats[user] == amount:
-          balances[user] = balances[user] if user in balances else 0
-          meats[user] = meats[user] if user in meats else 0
-          crypto_for_selling_meat = amount * 20
-          meats[user] -= amount
-          balances[user] += crypto_for_selling_meat
-          embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_meat} coins` for selling **{amount}** meat', color = random.choice(random_colors))
-          await ctx.send(embed = embed)
-        else:
-          await ctx.send('um i don\'t think you have enough meat for that **SCAMMER**')
-      else:
-        print(f'In buy(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
-        balances[user] = START_BAL 
-        await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {START_BAL}') 
-    else:
-      await ctx.send('you don\'t have any meat with you')
-  else:
-    await ctx.send('bruh that aint even in the shop wtf')
-
-  print(f'In sell(): Saving wool = {wools}')
-  try: 
-    with open(WOOL_FILE, 'w') as fp: 
-      json.dump(wools, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {WOOL_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving meats = {meats}')
-  try: 
-    with open(MEAT_FILE, 'w') as fp: 
-      json.dump(meats, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {MEAT_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving wheats = {wheats}')
-  try: 
-    with open(WHEAT_FILE, 'w') as fp: 
-      json.dump(wheats, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {WHEAT_FILE} not found! Not sure what to do here!') 
-
-
-
-
 
 @bot.command()
 async def popeyes(ctx):
@@ -4248,12 +4292,6 @@ async def profile_error(ctx, error):
 async def setprefix_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `setprefix [prefix]`')
-
-
-@sell.error
-async def sell_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `sell [item] [amount]`')
 
 @get.error
 async def get_error(ctx, error):
