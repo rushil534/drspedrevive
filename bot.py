@@ -1244,7 +1244,7 @@ async def help(ctx):
 
   x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
 
-  embed = discord.Embed(title = "Mr. Morale Command Center", description = 'head into a world full of memes', color = random.choice(random_colors))
+  embed = discord.Embed(title = "Mr. Morale Command Center", description = 'epic diskord bott', color = random.choice(random_colors))
   
   embed.add_field(name = ':smile: Fun', value = f'`{x}help fun`', inline = True)
 
@@ -1517,7 +1517,11 @@ async def guess(ctx):
 
 @bot.command(aliases = ['cm'])
 async def cowmarket(ctx):
-  embed = discord.Embed(title = 'Cow Market', description = 'le purchase [ex: mooshroom]\nle stew [ex: mooshroom]', color = random.choice(random_colors))
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+  embed = discord.Embed(title = 'Cow Market', description = f'{x}purchase [ex: mooshroom]\n{x}stew [ex: mooshroom]', color = random.choice(random_colors))
   embed.add_field(name = 'Basic Cows', value = '<:mooshroom:716492779391418440> **Mooshroom Cow**\n- Gives 15 ***mushroom stew*** every farm\n- Price: __14400__ coins\n- Can only be used 15 times, then it dies')
   await ctx.send(embed = embed)
 
@@ -1626,7 +1630,9 @@ async def setbank(ctx, member: discord.Member, amount: int):
       balances[member2] = amount
       await ctx.send(f'{member.name}\'s bank account value has been set to : **{amount}**')
     else:
-      await ctx.send(f'{member.name} doesn\'t have a bank account')
+      balances[member2] = amount
+      await ctx.send(f'they didnt have a bank account, they do now with {amount} coins')
+
   else:
     await ctx.send('only the **OWNER** of this bot can use this ')
 
@@ -1701,9 +1707,6 @@ async def twitch(ctx):
       json.dump(balances, fp) 
   except FileNotFoundError: 
     print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-
-
 
 
 @bot.command()
@@ -1791,18 +1794,6 @@ async def shop(ctx):
   embed.add_field(name = '**Fire**', value = 'Price: __949 Wheat__, __26,200 coins__, __60 salads__\nAdds 6,231 population every level upgrade', inline = False)
   embed.add_field(name = '**Police**', value = 'Price: __1,001 Meat__, __42,620 coins__, __90 salads__\nAdds 9,331 population every level upgrade', inline = False)
   await ctx.send(embed = embed)
-
-
-@bot.command()
-async def key(ctx):
-  embed = discord.Embed(title = 'Price Key', value = 'money money moneyyyyyy', color = random.choice(random_colors))
-  embed.add_field(name = 'Pig', value = '- Price: __200__ coins\n- Gives 6 meat per pig every farm\n- 1 meat sells for __25__ coins')
-  embed.add_field(name = 'Sheep', value = '- Price: __100__ coins\n- Gives 3 wool per sheep every farm\n- 1 wool sells for __15__ coins')
-  embed.add_field(name = 'Rice', value = '- Price: __30__ coins\n- Gives 4 wheat per rice every farm\n- 1 wheat sells for __10__ coins')
-  await ctx.send(embed = embed)
-
-
-
 
 @upgrade.command()
 async def parks(ctx): 
@@ -2951,6 +2942,14 @@ async def power(ctx):
     print(f'In sell(): File {BUFFALOS_FILE} not found! Not sure what to do here!') 
 
 
+@bot.command()
+async def key(ctx):
+  embed = discord.Embed(title = 'Price Key', color = random.choice(random_colors))
+  embed.add_field(name = '**Pig**', value = '- Price: **200** coins\n- Gives **6** meat per pig harvest\n- 1 meat sells for **25** coins')
+  embed.add_field(name = '**Sheep**', value = '- Price: **100** coins\n- Gives **3** wool per sheep harvest\n- 1 wool sells for **15** coins')
+  embed.add_field(name = '**Rice**', value = '- Price: **30** coins\n- Gives **4** wheat per rice harvest\n- 1 wheat sells for **10** coins')
+  await ctx.send(embed = embed)
+
 
 
 @bot.command()
@@ -3054,8 +3053,13 @@ async def farm(ctx):
   mushroom_stew[user] = mushroom_stew[user] if user in mushroom_stew else 0
   commands2[user] = commands2[user] if user in commands2 else 0
 
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
   if locations[user] == 0:
-    embed = discord.Embed(title = f"{ctx.message.author.name}'s California Farm", description = "`le <crop/animal>` to harvest the animals or crops\n `le shop` for more", color = random.choice(random_colors))
+    embed = discord.Embed(title = f"{ctx.message.author.name}'s California Farm", description = f"`{x}<crop/animal>` to harvest the animals or crops\n `{x}shop` for more", color = random.choice(random_colors))
     embed.add_field(name = "Animals [NOT SELLABLE]\n", value = f":sheep: Sheep | {sheeps[user]}\n :pig2: Pigs | {pigs[user]}\n :water_buffalo: Buffalos | {buffalos[user]}\n :hatched_chick: Uncooked Chickens | {uncooked_chickens[user]}\n <:mooshroom:716492779391418440> Mooshroom Cows | {mooshroom_cows[user]}\n", inline = True)
     embed.add_field(name = "\nCrops [NOT SELLABLE]\n", value = f":rice: Rice | {rices[user]}\n", inline = False)
     embed.add_field(name = "\nGoods [SELLABLE]\n", value = f":scroll:  Wool | {wools[user]}\n :tanabata_tree: Wheat | {wheats[user]}\n :cut_of_meat: Meat | {meats[user]}\n :chicken: Chickens | {cooked_chickens[user]}\n", inline = False)
@@ -3064,10 +3068,10 @@ async def farm(ctx):
     embed.add_field(name = "\nDishes [NOT SELLABLE]\n", value = f':salad: Salads | {salads[user]}\n <:mushstew:716492699879997530> Mushroom Stew | {mushroom_stew[user]}', inline = False)
     embed.add_field(name = "\nJets [NOT SELLABLE]\n", value = f':airplane_small: Morris | {morris[user]}\n:airplane: Douglas | {douglas[user]}', inline = False)
     embed.add_field(name = "\nLocation [MISCELLANEOUS]", value = f':man_running: Location | California', inline = False)
-    embed.add_field(name = '\nItems [MISCELLANEOUS]', value = f'<:bowl:716492750996111441> Bowl | {bowls[user]}', inline = False)
+    embed.add_field(name = '\nItems [MISCELLANEOUS]', value = f':bowl_with_spoon: Bowl | {bowls[user]}', inline = False)
     await ctx.send(embed=embed)
   else:
-    embed = discord.Embed(title = f"{ctx.message.author.name}'s California Farm", description = "`le <crop/animal>` to harvest the animals or crops\n `le shop` for more", color = random.choice(random_colors))
+    embed = discord.Embed(title = f"{ctx.message.author.name}'s California Farm", description = f"`{x}<crop/animal>` to harvest the animals or crops\n `{x}shop` for more", color = random.choice(random_colors))
     embed.add_field(name = "Animals [NOT SELLABLE]\n", value = f":sheep: Sheep | {sheeps[user]}\n :pig2: Pigs | {pigs[user]}\n :water_buffalo: Buffalos | {buffalos[user]}\n :hatched_chick: Uncooked Chickens | {uncooked_chickens[user]}\n <:mooshroom:716492779391418440> Mooshroom Cows | {mooshroom_cows[user]}\n", inline = True)
     embed.add_field(name = "\nCrops [NOT SELLABLE]\n", value = f":rice: Rice | {rices[user]}\n", inline = False)
     embed.add_field(name = "\nGoods [SELLABLE]\n", value = f":scroll:  Wool | {wools[user]}\n :tanabata_tree: Wheat | {wheats[user]}\n :cut_of_meat: Meat | {meats[user]}\n :chicken: Chickens | {cooked_chickens[user]}\n", inline = False)
@@ -3076,7 +3080,7 @@ async def farm(ctx):
     embed.add_field(name = "\nDishes [NOT SELLABLE]\n", value = f':salad: Salads | {salads[user]}\n <:mushstew:716492699879997530> Mushroom Stew | {mushroom_stew[user]}', inline = False)
     embed.add_field(name = "\nJets [NOT SELLABLE]\n", value = f':airplane_small: Morris | {morris[user]}\n:airplane: Douglas | {douglas[user]}', inline = False)
     embed.add_field(name = "\nLocation [MISCELLANEOUS]", value = f':man_running: Location | Texas', inline = False)
-    embed.add_field(name = '\nItems [MISCELLANEOUS]', value = f'<:bowl:716492750996111441> Bowl | {bowls[user]}', inline = False)
+    embed.add_field(name = '\nItems [MISCELLANEOUS]', value = f':bowl_with_spoon: Bowl | {bowls[user]}', inline = False)
     await ctx.send(embed=embed)
 
 
@@ -3600,7 +3604,12 @@ async def sell(ctx, arg, amount: int):
 
 @bot.command()
 async def popeyes(ctx):
-  embed = discord.Embed(title = "Mr. Morale's Popeyes", description = "`le buy <item> <amount>` | `le cook <item> <amount>`", color = random.choice(random_colors))
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = "Mr. Morale's Popeyes", description = f"`{x}buy <item> <amount>` | `{x}cook <item> <amount>`", color = random.choice(random_colors))
   embed.add_field(name = ":hatched_chick: Uncooked Chicken [ANIMAL]", value = "Price: __10,000__ coins")
   await ctx.send(embed = embed)
 
@@ -3625,9 +3634,13 @@ async def shop(ctx):
 async def jetshop(ctx):
   global morris, douglas
   user = str(ctx.message.author.id)
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
   morris[user] = morris[user] if user in morris else 0
   douglas[user] = douglas[user] if user in douglas else 0
-  embed = discord.Embed(title = 'Jet shop', description = '`le get [Morris/Douglas]` or `le fly [Morris/Douglas]`', color = random.choice(random_colors))
+  embed = discord.Embed(title = 'Jet shop', description = f'`{x}get [Morris/Douglas]` or `{x}fly [Morris/Douglas]`', color = random.choice(random_colors))
   embed.add_field(name = ':airplane_small: Morris X8200', value = 'small but fiesty jet, 25% chance of getting air sickness\n`Price: 1500 Meat, 3 Salads, 5000 wheat, 10000 coins`', inline = True)
   embed.add_field(name = ':airplane: Douglas 900ER', value = 'Wanna travel far without problems, here\'s your answer!\n`Price: 5000 Meat, 20 Salads, 10 Stoves, 75000 coins`', inline = False)
   await ctx.send(embed = embed)
@@ -3964,10 +3977,12 @@ async def leaderboard(ctx):
         third_place = f"{member.name}#{member.discriminator}"
         third_balance = balance
 
-    await ctx.send(f"First place: {first_place} with {first_balance} coins")
-    await ctx.send(f"Second place: {second_place} with {second_balance} coins")
-    await ctx.send(f"Third place: {third_place} with {third_balance} coins")
+    embed = discord.Embed(title = f"{ctx.guild.name}'s Money Leaderboard", color = random.choice(random_colors))
+    embed.add_field(name = f":first_place: `{first_balance}` - {first_place}", value = f'', inline = False)
+    embed.add_field(name = f":second_place: `{second_balance}` - {second_place}", value = f"", inline = False)
+    embed.add_field(name = f":third_place: `{third_balance}` - {third_place}", value = f'', inline = False)
 
+    await ctx.send(embed = embed)
   elif msg.content.lower() == 'global':   
     sorted_balances = dict(sorted(balances.items(), key=itemgetter(1), reverse=True)[:3])
     first_place = None
@@ -3986,12 +4001,14 @@ async def leaderboard(ctx):
         third_place = f"{member.name}#{member.discriminator}"
         third_balance = balance
 
-    await ctx.send(f"First place: {first_place} with {first_balance} coins")
-    await ctx.send(f"Second place: {second_place} with {second_balance} coins")
-    await ctx.send(f"Third place: {third_place} with {third_balance} coins")
+    embed = discord.Embed(title = "Global Money Leaderboard", color = random.choice(random_colors))
+    embed.add_field(name = f":first_place: `{first_balance}` - {first_place}", value = f'', inline = False)
+    embed.add_field(name = f":second_place: `{second_balance}` - {second_place}", value = f"", inline = False)
+    embed.add_field(name = f":third_place: `{third_balance}` - {third_place}", value = f'', inline = False)
+
+    await ctx.send(embed = embed)
   else:
     await ctx.send("not an option; rerun the command")
-
 
 @bot.command(name = 'plead')
 @commands.cooldown(1, 60, commands.BucketType.user)
@@ -4009,7 +4026,7 @@ async def plead(ctx):
   else: 
     print(f'In plead(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
-    await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {START_BAL}') 
+    await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with {START_BAL} coins') 
 
   print(f'In plead(): Saving balances = {balances}')
   try: 
@@ -4160,7 +4177,6 @@ async def sheep_error(ctx, error):
     m, s = divmod(error.retry_after, 60)
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to get more goods  ')
 
-
 @health.error
 async def health_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
@@ -4174,15 +4190,10 @@ async def pig_error(ctx, error):
     m, s = divmod(error.retry_after, 60)
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to get more goods  ')
 
-
-
-
-
 @fly.error
 async def fly_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `fly [morris/douglas]`')
-
 
 @automemez.error
 async def am_error(ctx, error):
@@ -4249,16 +4260,10 @@ async def get_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `get [morris/douglas]`')
 
-# @buy.error
-# async def buy_error(ctx, error):
-#   if isinstance(error, commands.MissingRequiredArgument):
-#     await ctx.send('Proper Usage: `le buy [item] [amount]`')
-
-
 @combine.error
 async def combine_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `combine [chicken] [rice]` See `le notebook` for amounts of the recipe')
+    await ctx.send('Proper Usage: `combine [chicken] [rice]` See the command `notebook` for amounts of the recipe')
 
 @requirements.error
 async def requirements_error(ctx, error):
