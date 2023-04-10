@@ -27,7 +27,6 @@ from operator import itemgetter
 # DARK_GREEN : 0x1F8B4C
 # DARK_BLUE  : 0x206694
 
-
 #=======================================================================
 
 def get_prefix(bot, message):
@@ -63,10 +62,7 @@ def write_json(data, file_path):
 
 #=======================================================================
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.presences = True
-intents.members = True
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = commands.when_mentioned and get_prefix, intents = intents)
 epoch = datetime.datetime.utcfromtimestamp(0)
 bot.remove_command("help")
@@ -557,7 +553,6 @@ async def on_message(message):
 
   await bot.process_commands(message)
 
-
 @bot.event
 async def on_command(ctx):
   global commands2
@@ -598,7 +593,6 @@ async def on_command(ctx):
       json.dump(exp, fp) 
   except FileNotFoundError: 
     return
-
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -1129,6 +1123,94 @@ async def guess(ctx):
 
 #============================================================================
 # ECONOMY COMMANDS
+
+#=============================================================================================================
+# USE
+
+@bot.group(pass_context = True)
+async def use(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `use [item]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"you can only use **ambulances** or **bread**")
+
+@use.command(name = 'ambulance', aliases = ['ambulances'])
+async def ambulance_subcommand(ctx):
+  global ambulances, healths
+  user = str(ctx.message.author.id)
+  ambulances[user] = ambulances[user] if user in ambulances else 0
+  healths[user] = healths[user] if user in healths else 0
+
+  if user in ambulances:
+    if ambulances[user] >= 1:
+      if user in healths:
+        if healths[user] < 100:
+          healths[user] = 100
+          ambulances[user] -= 1
+          await ctx.send(f'{ctx.message.author.mention} has just healed themselves to 100 health!')
+        else:
+          await ctx.send('You can\'t dose that, you have full health!')
+      else:
+        await ctx.send('you didn\'t have a health bar apparently. i started you off w `100 health`')
+        healths[user] = 100
+    else:
+      await ctx.send('You don\'t have any ambulances with u')
+  else:
+    await ctx.send('you have no ambulances at all')
+
+  print(f'In use(): Saving ambulances = {ambulances}')
+  try: 
+    with open(AMBULANCES_FILE, 'w') as fp: 
+      json.dump(ambulances, fp) 
+  except FileNotFoundError: 
+    print(f'In use(): File {AMBULANCES_FILE} not found! Not sure what to do here!') 
+
+  print(f'In use(): Saving healths = {healths}')
+  try: 
+    with open(HEALTH_FILE, 'w') as fp: 
+      json.dump(healths, fp) 
+  except FileNotFoundError: 
+    print(f'In use(): File {HEALTH_FILE} not found! Not sure what to do here!') 
+
+@use.command(name = 'bread', aliases = ['breads'])
+async def bread_subcommand(ctx):
+  global bread, healths
+  user = str(ctx.message.author.id)
+  bread[user] = bread[user] if user in bread else 0
+  healths[user] = healths[user] if user in healths else 0
+
+  if user in bread:
+    if bread[user] >= 1:
+      if user in healths:
+        if healths[user] < 60:
+          healths[user] = 60
+          bread[user] -= 1
+          await ctx.send(f'{ctx.message.author.mention} has just healed themselves to 60 health!')
+        else:
+          await ctx.send('you have more than 60 health')
+      else:
+        await ctx.send('you didn\'t have a health bar apparently. i started you off w `100 health`')
+        healths[user] = 100
+    else:
+      await ctx.send('you have no bread')
+  else:
+    await ctx.send('you have no bread')
+
+  print(f'In use(): Saving healths = {healths}')
+  try: 
+    with open(HEALTH_FILE, 'w') as fp: 
+      json.dump(healths, fp) 
+  except FileNotFoundError: 
+    print(f'In use(): File {HEALTH_FILE} not found! Not sure what to do here!') 
+
+  print(f'In use(): Saving bread = {bread}')
+  try: 
+    with open(BREAD_FILE, 'w') as fp: 
+      json.dump(bread, fp) 
+  except FileNotFoundError: 
+    print(f'In use(): File {BREAD_FILE} not found! Not sure what to do here!')   
+
+#=============================================================================================================
 
 #=============================================================================================================
 # SELL
@@ -2803,7 +2885,7 @@ async def advanced_subcommand(ctx):
 @bot.group(pass_context = True)
 async def collect(ctx):
   if ctx.subcommand_passed is None:
-    await ctx.send('Proper Usage: `collect [power/water/waste/fire/police/health/entertainment/health]`')
+    await ctx.send('Proper Usage: `collect [power/water/waste/fire/police/health/entertainment/parks]`')
   elif ctx.invoked_subcommand is None:
     await ctx.send(f"that section doesn't exist buddy")
 
@@ -3885,7 +3967,7 @@ async def pig(ctx):
     else:
       await ctx.send('You don\'t have any pigs')
   else:
-    await ctx.send('You don\'t have enought health for this!')
+    await ctx.send('You don\'t have enough health for this!')
 
   print(f'In sell(): Saving pigs = {pigs}')
   try: 
@@ -3942,67 +4024,6 @@ async def jetshop(ctx):
   embed.add_field(name = ':airplane_small: Morris X8200', value = 'small but fiesty jet, 25% chance of getting air sickness\n`Price: 1500 Meat, 3 Salads, 5000 wheat, 10000 coins`', inline = True)
   embed.add_field(name = ':airplane: Douglas 900ER', value = 'Wanna travel far without problems, here\'s your answer!\n`Price: 5000 Meat, 20 Salads, 10 Stoves, 75000 coins`', inline = False)
   await ctx.send(embed = embed)
-
-@bot.command()
-async def use(ctx, arg):
-  global ambulances, healths, bread
-  user = str(ctx.message.author.id)
-
-  if arg == "ambulances" or arg == "ambulance":
-    if user in ambulances:
-      if ambulances[user] > 1 or ambulances[user] == 1:
-        if user in healths:
-          if healths[user] < 100:
-            healths[user] = 100
-            ambulances[user] -= 1
-            await ctx.send(f'{ctx.message.author.mention} has just healed themselves to 100 health!')
-          else:
-            await ctx.send('You can\'t dose that, you have full health!')
-        else:
-          healths[user] = 100
-      else:
-        await ctx.send('You don\'t have any ambulances with u')
-    else:
-      await ctx.send('Go buy some ambulances child')
-  elif arg == 'bread' or arg == 'bread':
-    if user in bread:
-      if bread[user] > 1 or bread[user] == 1:
-        if user in healths:
-          if healths[user] < 60:
-            healths[user] = 60
-            bread[user] -= 1
-            await ctx.send(f'{ctx.message.author.mention} has just healed themselves to 60 health!')
-          else:
-            await ctx.send('you dumbass you have more than 60 health smh smh')
-        else:
-          healths[user] = 100
-      else:
-        await ctx.send(' go get some bread first')
-    else:
-      await ctx.send('go get some bread first')
-  else:
-    await ctx.send('not an option !')
-
-  print(f'In sell(): Saving meats = {bread}')
-  try: 
-    with open(BREAD_FILE, 'w') as fp: 
-      json.dump(bread, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {BREAD_FILE} not found! Not sure what to do here!')   
-
-  print(f'In buy(): Saving ambulances = {ambulances}')
-  try: 
-    with open(AMBULANCES_FILE, 'w') as fp: 
-      json.dump(ambulances, fp) 
-  except FileNotFoundError: 
-    print(f'In pigs(): File {AMBULANCES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In buy(): Saving healths = {healths}')
-  try: 
-    with open(HEALTH_FILE, 'w') as fp: 
-      json.dump(healths, fp) 
-  except FileNotFoundError: 
-    print(f'In pigs(): File {HEALTH_FILE} not found! Not sure what to do here!') 
 
 @bot.command()
 async def health(ctx):
@@ -4161,11 +4182,6 @@ async def give_error(ctx, error):
 async def youtube_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `youtube [search query]`')
-
-@use.error
-async def use_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `use [item]`')
 
 @setmembermessage.error
 async def setmembermessage_error(ctx, error):
