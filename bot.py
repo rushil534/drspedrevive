@@ -612,6 +612,412 @@ async def on_reaction_add(reaction, user):
 
 #============================================================================
 
+#============================================================================
+# ADMIN 
+
+@bot.command()
+async def blacklist(ctx, user: discord.Member):
+  x = str(user.id)
+
+  if str(ctx.message.author.id) == "707091184115253248":
+    if x not in bot.blacklisted_users:
+      bot.blacklisted_users.append(x)
+      data = read_json("blacklist.json")
+
+      if "blacklistedUsers" not in data:
+        data["blacklistedUsers"] = []
+        
+      data["blacklistedUsers"].append(x)
+      write_json(data, "blacklist.json")
+      await ctx.send(f'**{user.name}** has been blacklisted')
+    else:
+      await ctx.send('alr blacklisted')
+  else:
+    await ctx.send('only owner can do this')
+
+@bot.command()
+async def unblacklist(ctx, user: discord.Member):
+  x = str(user.id)
+
+  if str(ctx.message.author.id) == "707091184115253248":
+    if x in bot.blacklisted_users:
+      bot.blacklisted_users.remove(x)
+      data = read_json("blacklist.json")
+
+      if "blacklistedUsers" not in data:
+        data["blacklistedUsers"] = []
+
+      if x in data["blacklistedUsers"]:
+        data["blacklistedUsers"].remove(x)
+        write_json(data, "blacklist.json")
+        await ctx.send(f'**{user.name}** has been unblacklisted')
+      else:
+        await ctx.send(f'**{user.name}** was never blacklisted')
+    else:
+      await ctx.send(f'**{user.name}** was never blacklisted')
+  else:
+    await ctx.send(f'only owner can do this')
+
+@bot.command()
+async def setbank(ctx, member: discord.Member, amount: int):
+  global balances
+  user = str(ctx.message.author.id)
+  member2 = str(member.id)
+  if user == '707091184115253248':
+    if member2 in balances:
+      balances[member2] = amount
+      await ctx.send(f'{member.name}\'s bank account value has been set to : **{amount}**')
+    else:
+      balances[member2] = amount
+      await ctx.send(f'they didnt have a bank account, they do now with {amount} coins')
+
+  else:
+    await ctx.send('only the **OWNER** of this bot can use this ')
+
+  print(f'In beg(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+#============================================================================
+
+#============================================================================
+# SETTINGS
+
+@bot.command(aliases = ['sp'])
+async def setprefix(ctx, *, pre):
+  await ctx.send('Would you like a space after the prefix?\nEx: [prefix] [command]\n`y` or `n`')
+  msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+
+  if msg.content.lower() == 'y': 
+    with open(r"prefixes.json", 'r') as f:
+      prefixes = json.load(f)
+
+    pre2 = pre + ' '
+    prefixes[str(ctx.guild.id)] = pre2
+    embed = discord.Embed(description = f'Changed prefix to `{pre} `', color = random.choice(random_colors))
+    await ctx.send(embed = embed)
+
+    with open(r"prefixes.json", 'w') as f:
+      json.dump(prefixes, f, indent = 4)
+  elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
+    with open(r"prefixes.json", 'r') as f:
+      prefixes = json.load(f)
+
+      prefixes[str(ctx.guild.id)] = pre
+      embed = discord.Embed(description = f'Changed prefix to `{pre}`', color = random.choice(random_colors))
+      await ctx.send(embed = embed)
+
+    with open(r"prefixes.json", 'w') as f:
+      json.dump(prefixes, f, indent = 4)
+  else:
+    await ctx.send('not an option; rerun the command')
+
+@bot.command(aliases = ['rp'])
+async def resetprefix(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+    prefixes[str(ctx.guild.id)] = 'le '
+    embed = discord.Embed(description = f'Changed prefix back to `le`', color = random.choice(random_colors))
+    await ctx.send(embed = embed)
+
+  with open(r"prefixes.json", 'w') as f:
+    json.dump(prefixes, f, indent = 4)
+
+#============================================================================
+
+#=============================================================================================================
+# HELP
+
+@bot.group(invoke_without_command = True, pass_context = True)
+async def help(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = "Mr. Morale Command Center", description = 'epic diskord bott', color = random.choice(random_colors))
+  
+  embed.add_field(name = ':smile: Fun', value = f'`{x}help fun`', inline = True)
+
+  embed.add_field(name = ':hammer: Moderation', value = f"`{x}help moderation`", inline = False)
+
+  embed.add_field(name = ':money_with_wings: Economy', value = f"`{x}help economy`", inline = False)
+
+  embed.add_field(name = ':alien: Other', value = f"`{x}help other`", inline = False)
+
+  embed.add_field(name = ':axe: Settings', value = f"`{x}help settings`", inline = False)
+
+  embed.add_field(name = ':b: Text', value = f'`{x}help text`', inline = False)
+
+  embed.set_footer(text = f'use `{x}` before each command!')
+
+  await ctx.send(embed = embed)
+
+
+@help.command(name = 'economy')
+async def economy_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ":money_with_wings: Economy Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`, `give`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
+  await ctx.send(embed = embed)
+
+
+@help.command(name = 'fun')
+async def fun_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ":smile: Fun Commands", description = '`fat`, `meme`, `automemez`, `stopmemez`, `youtube`, `guess`, `status`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
+  await ctx.send(embed = embed)
+
+
+@help.command(name = 'moderation')
+async def mod_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ":hammer: Moderation Commands", description = '`kick`, `ban`, `unban`, `purge`, `userinfo`, `warn`, `createrole`, `changenick`, `reactionmessage`, `membermessage`, `setmembermessage`, `setchannelid`, `viewmembermessage`, `autopurge`, `stoppurge`, `new`, `delete`, `lock`, `unlock`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
+  await ctx.send(embed = embed)
+
+
+@help.command(name = 'other')
+async def other_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ':alien: Other Commands', description = '`mainstuff`, `dmdev`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
+  await ctx.send(embed = embed)
+
+
+@help.command(name = 'settings')
+async def settings_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ':axe: Setting Commands', description = '`setprefix`, `resetprefix`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
+  await ctx.send(embed = embed)
+
+
+@help.command(name = 'text')
+async def text_subcommand(ctx):
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+  
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  embed = discord.Embed(title = ':b: Text Commands', description = '`bify`, `echo`, `ubi`, `underline`, `bold`, `italics`, `codeblock`, `strikethrough`, `underlineitalics`, `underlinebold`, `bolditalics`', color = random.choice(random_colors))
+  embed.set_footer(text = f'use `{x}` before each command!')
+  await ctx.send(embed = embed)
+
+#=============================================================================================================
+# MODERATION 
+
+@bot.command(aliases = ['mm'])
+@has_permissions(manage_guild = True)
+async def membermessage(ctx):
+  global allowmembermessage
+  server = str(ctx.guild.id)
+  allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
+
+  if allowmembermessage[server] == 0:
+    await ctx.send('Sending messages when a member joins is set to: **True**\nCustomize the message in `le setmembermessage`')
+    allowmembermessage[server] = 1
+  else:
+    await ctx.send('Sending messages when a member joins is set to: **False**')
+    allowmembermessage[server] = 0
+
+  print(f'In beg(): Saving balances = {allowmembermessage}')
+  try: 
+    with open(ALLOW_MEMBER_MESSAGE, 'w') as fp: 
+      json.dump(allowmembermessage, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {ALLOW_MEMBER_MESSAGE} not found! Not sure what to do here!') 
+
+@bot.command(aliases = ['smm'])
+@has_permissions(manage_guild=True)
+async def setmembermessage(ctx, *, string: str):
+  global allowmembermessage, membermessage
+  server = str(ctx.guild.id)
+  allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
+  membermessage[server] = membermessage[server] if server in membermessage else ''
+
+  if allowmembermessage[server] == 1:
+    await ctx.send(f'The final result will look like this:\n***member is mentioned here***, {string}\nGood? `y` or `n`')
+    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+    if msg.content.lower() == 'y' or msg.content.lower() == 'Y':
+      membermessage[server] = string
+      await ctx.send('completed, btw you need to give me a proper channel id to send the messages to using `le setchannelid`\nif the id is not proper, then you can guess why its not working')
+    elif msg.content.lower() == 'N' or msg.content.lower() == 'n':
+      await ctx.send('rip lol you chose not to use that')
+      membermessage[server] == ''
+  else:
+    await ctx.send('you don\'t even have member joining messaging enabled! to do that do `le membermessage`')
+
+  print(f'In beg(): Saving balances = {membermessage}')
+  try: 
+    with open(MEMBER_MESSAGE, 'w') as fp: 
+      json.dump(membermessage, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {MEMBER_MESSAGE} not found! Not sure what to do here!') 
+  
+@bot.command()
+async def viewmembermessage(ctx):
+  global membermessage
+  server = str(ctx.guild.id)
+  if server in membermessage:
+    if membermessage[server] == '':
+      await ctx.send('You don\'t have a member joining message set!')
+    else:
+      await ctx.send(f'{membermessage[server]}')
+  else:
+    await ctx.send('You don\'t have a member joining message set!')
+
+@bot.command()
+@has_permissions(manage_guild = True)
+async def setchannelid(ctx, id: int):
+  global channel_id, allowmembermessage
+  server = str(ctx.guild.id)
+  allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
+  channel_id[server] = channel_id[server] if server in channel_id else 0
+  
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  
+
+  if len(str(id)) != 19:
+    await ctx.send('that isn\'t a valid channel id')
+    return
+    
+  if allowmembermessage[server] == 1:  
+    channel_id[server] = id
+    await ctx.send(f'set channel id as: `{id}`')
+  else:
+    await ctx.send(f'i can\'t do that without the member joining message function enabled buddy\nenable it by using `{x}membermessage`')
+
+  print(f'In beg(): Saving balances = {channel_id}')
+  try: 
+    with open(CHANNEL_ID, 'w') as fp: 
+      json.dump(channel_id, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {CHANNEL_ID} not found! Not sure what to do here!')
+
+@bot.command()
+@has_permissions(manage_guild = True)
+async def reactionmessage(ctx):
+  global allowreactionmessage
+  server = str(ctx.guild.id) 
+  allowreactionmessage[server] = allowreactionmessage[server] if server in allowreactionmessage else 0
+  if allowreactionmessage[server] == 0:
+    await ctx.send('Sending messages when reactions are executed is set to: **True**')
+    allowreactionmessage[server] = 1
+  else:
+    await ctx.send('Sending messages when reactions are executed is set to: **False**')
+    allowreactionmessage[server] = 0
+
+  print(f'In beg(): Saving balances = {allowreactionmessage}')
+  try: 
+    with open(ALLOW_REACTION_MESSAGE, 'w') as fp: 
+      json.dump(allowreactionmessage, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {ALLOW_REACTION_MESSAGE} not found! Not sure what to do here!') 
+
+#============================================================================
+
+#============================================================================
+# FUN
+
+@bot.command()
+async def status(ctx, member: discord.Member = None):
+  if member is None:
+    member = ctx.message.author
+
+  await ctx.send(member.status)
+
+@bot.command()
+async def youtube(ctx, *, search):
+  query_string = urllib.parse.urlencode({'search_query': search})
+  htm_content = urllib.request.urlopen('https://www.youtube.com/results?' + query_string)
+  search_results = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
+  await ctx.send('http://www.youtube.com/watch?v=' + search_results[0])
+
+@bot.command()
+async def fat(ctx, member: discord.Member = None):
+  if member is None:
+    embed = discord.Embed(title="fatness determiner", description=f"You are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
+    await ctx.send(embed=embed)
+  else:
+    embed = discord.Embed(title="fatness determiner", description=f"{member.name} is {random.randint(1, 100)}% fat", color = random.choice(random_colors))
+    await ctx.send(embed=embed)
+
+@bot.command(pass_context=True)
+async def automemez(ctx, timeout: float):
+  global autoMeme
+  if timeout > 3:
+    autoMeme = True
+    await ctx.send(f'i will send reddit memes every {timeout} seconds, to stop this, use the command `stopmemez`')
+    while autoMeme == True:
+      await meme(ctx)
+      await asyncio.sleep(timeout)
+  else:
+    await ctx.send('rerun the command with a time value higher than `3` seconds')
+
+@bot.command()
+async def stopmemez(ctx):
+  global autoMeme
+  autoMeme = False
+  await ctx.send('done')
+
+@bot.command(pass_context=True)
+async def meme(ctx):
+  embed = discord.Embed(color = random.choice(random_colors))
+
+  async with aiohttp.ClientSession() as cs:
+    async with cs.get('https://www.reddit.com/u/kerdaloo/m/dankmemer/top/.json?sort=top&t=day&limit=500') as r:
+      res = await r.json()
+      embed.set_image(url = res['data']['children'] [random.randint(0, 30)]['data']['url'])
+      await ctx.send(embed=embed)
+
+@bot.command()
+async def darkhumor(ctx):
+  embed = discord.Embed(color = random.choice(random_colors))
+
+  async with aiohttp.ClientSession() as cs:
+    async with cs.get('https://www.reddit.com/r/DarkHumorAndMemes/new.json?sort=hot') as r:
+      res = await r.json()
+      embed.set_image(url = res['data']['children'] [random.randint(0, 25)]['data']['url'])
+      await ctx.send(embed=embed)
+
 @bot.command()
 async def slots(ctx):
   parrot = ':parrot:'
@@ -711,93 +1117,18 @@ async def slots(ctx):
       await msg.edit(content="{}\n {} You Lost".format(slotOutput,ctx.message.author.mention))
 
 @bot.command()
-async def blacklist(ctx, user: discord.Member):
+async def guess(ctx):
+  await ctx.send('guess a number from 1-10')
+  answer = random.randint(1, 10)
+  msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author, timeout = 6.0)
 
-  x = str(user.id)
-
-  if str(ctx.message.author.id) == "707091184115253248":
-    if x not in bot.blacklisted_users:
-      bot.blacklisted_users.append(x)
-      data = read_json("blacklist.json")
-
-      if "blacklistedUsers" not in data:
-        data["blacklistedUsers"] = []
-        
-      data["blacklistedUsers"].append(x)
-      write_json(data, "blacklist.json")
-      await ctx.send(f'**{user.name}** has been blacklisted')
-    else:
-      await ctx.send('alr blacklisted')
+  if msg.content.startswith(f'{answer}'):
+    await ctx.send('correct')
   else:
-    await ctx.send('only owner can do this')
+    await ctx.send(f'wrong, it was **{answer}**')
 
-@bot.command()
-async def unblacklist(ctx, user: discord.Member):
-
-  x = str(user.id)
-
-  if str(ctx.message.author.id) == "707091184115253248":
-    if x in bot.blacklisted_users:
-      bot.blacklisted_users.remove(x)
-      data = read_json("blacklist.json")
-
-      if "blacklistedUsers" not in data:
-        data["blacklistedUsers"] = []
-
-      if x in data["blacklistedUsers"]:
-        data["blacklistedUsers"].remove(x)
-        write_json(data, "blacklist.json")
-        await ctx.send(f'**{user.name}** has been unblacklisted')
-      else:
-        await ctx.send(f'**{user.name}** was never blacklisted')
-    else:
-      await ctx.send(f'**{user.name}** was never blacklisted')
-  else:
-    await ctx.send(f'only owner can do this')
-
-
-@bot.command(aliases = ['sp'])
-async def setprefix(ctx, *, pre):
-  await ctx.send('Would you like a space after the prefix?\nEx: [prefix] [command]\n`y` or `n`')
-  msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-
-  if msg.content.lower() == 'y': 
-    with open(r"prefixes.json", 'r') as f:
-      prefixes = json.load(f)
-
-    pre2 = pre + ' '
-    prefixes[str(ctx.guild.id)] = pre2
-    embed = discord.Embed(description = f'Changed prefix to `{pre} `', color = random.choice(random_colors))
-    await ctx.send(embed = embed)
-
-    with open(r"prefixes.json", 'w') as f:
-      json.dump(prefixes, f, indent = 4)
-  elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
-    with open(r"prefixes.json", 'r') as f:
-      prefixes = json.load(f)
-
-      prefixes[str(ctx.guild.id)] = pre
-      embed = discord.Embed(description = f'Changed prefix to `{pre}`', color = random.choice(random_colors))
-      await ctx.send(embed = embed)
-
-    with open(r"prefixes.json", 'w') as f:
-      json.dump(prefixes, f, indent = 4)
-  else:
-    await ctx.send('not an option; rerun the command')
-
-
-@bot.command(aliases = ['rp'])
-async def resetprefix(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-
-    prefixes[str(ctx.guild.id)] = 'le '
-    embed = discord.Embed(description = f'Changed prefix back to `le`', color = random.choice(random_colors))
-    await ctx.send(embed = embed)
-
-  with open(r"prefixes.json", 'w') as f:
-    json.dump(prefixes, f, indent = 4)
+#============================================================================
+# ECONOMY COMMANDS
 
 #=============================================================================================================
 # SELL
@@ -932,6 +1263,148 @@ async def meat_subcommand(ctx, amount: int = None):
 
 #=============================================================================================================
 
+#=============================================================================================================
+# FLY
+
+# 0 IS CALIFORNIA
+# 1 IS TEXAS
+
+@bot.group(pass_context = True)
+async def fly(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `fly [morris/douglas]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"that plane doesn't exist buddy")
+
+@fly.command(name = 'morris')
+async def morris_flysubcommand(ctx):
+  global morris, locations, healths
+  user = str(ctx.message.author.id)
+  locations[user] = locations[user] if user in locations else 0
+  morris[user] = morris[user] if user in morris else 0
+  healths[user] = healths[user] if user in healths else 0
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  if morris[user] >= 1:
+    await ctx.send('You have a 25% chance of getting air sick, causing you to lose about 5-9 health.\nStill want to fly on this plane? `y` or `n`')
+    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+    if msg.content.lower() == 'y':
+      if healths[user] < 9:
+        await ctx.send('you do not have enough health to risk this flight')
+        return
+      await ctx.send('Where do you want to travel? `Texas` or `California`?')
+      msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+      if msg.content.lower() == 'california':
+        if locations[user] == 0:
+          await ctx.send('you are already in california')
+          return
+        elif locations[user] == 1:
+          CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
+          HEALTH_LOSS = random.randint(5, 9)
+          await ctx.send('travelling back to California!')
+          if CHANCE_OF_GETTING_AIR_SICK <= 25:
+            healths[user] -= HEALTH_LOSS
+            await ctx.send(f'welp you got air sick, causing you to lose {HEALTH_LOSS} health')
+            locations[user] = 0
+            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+          else:
+            locations[user] = 0
+            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+        else:
+          await ctx.send('you don\'t have a location value')
+      elif msg.content.lower() == 'texas':
+        if locations[user] == 1:
+          await ctx.send('you are already in Texas')
+          return
+        elif locations[user] == 0:
+          CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
+          HEALTH_LOSS = random.randint(5, 9)
+          await ctx.send('Travelling to Texas!')
+          if CHANCE_OF_GETTING_AIR_SICK > 25:
+            await ctx.send(f'you got air sick, causing you to lose {HEALTH_LOSS} health')
+            healths[user] -= HEALTH_LOSS
+            locations[user] = 1
+            await asyncio.sleep(1.5)
+            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+          else:
+            locations[user] = 1
+            await asyncio.sleep(1.5)
+            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+        else:
+          await ctx.send('you don\'t have a location value')
+      else:
+        await ctx.send('not an option; rerun the command')
+    elif msg.content.lower() == 'n':
+      await ctx.send('alright, flight cancelled')
+  else:
+    await ctx.send('You don\'t have the Morris jet!')
+
+  print(f'In fly(): Saving locations = {locations}')
+  try: 
+    with open(LOCATIONS_FILE, 'w') as fp: 
+      json.dump(locations, fp) 
+  except FileNotFoundError: 
+    print(f'In fly(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
+
+  print(f'In fly(): Saving healths = {healths}')
+  try: 
+    with open(HEALTH_FILE, 'w') as fp: 
+      json.dump(healths, fp) 
+  except FileNotFoundError: 
+    print(f'In fly(): File {HEALTH_FILE} not found! Not sure what to do here!') 
+
+@fly.command(name = 'douglas')
+async def douglas_flysubcommand(ctx):
+  global douglas, locations
+  user = str(ctx.message.author.id)
+  locations[user] = locations[user] if user in locations else 0
+  douglas[user] = douglas[user] if user in douglas else 0
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  if douglas[user] >= 1:
+    await ctx.send('Where do you want to travel? `Texas` or `California`?')
+    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+    if msg.content.lower() == 'california':
+      if locations[user] == 0:
+        await ctx.send('you are already in California')
+      elif locations[user] == 1:
+          await ctx.send('Travelling back to california!')
+          locations[user] = 0
+          await asyncio.sleep(1.5)
+          await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+      else:
+        await ctx.send('you don\'t have a location value')
+    elif msg.content.lower() == 'texas':
+      if locations[user] == 1:
+        await ctx.send('you are already in Texas')
+      elif locations[user] == 0:
+          await ctx.send('Travelling to Texas!')
+          locations[user] = 1
+          await asyncio.sleep(1.5)
+          await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+      else:
+        await ctx.send('you don\'t have a location value')
+    else:
+      await ctx.send('not an option; rerun the command')
+  else:
+    await ctx.send('You don\'t have the Douglas jet!')
+
+  print(f'In fly(): Saving locations = {locations}')
+  try: 
+    with open(LOCATIONS_FILE, 'w') as fp: 
+      json.dump(locations, fp) 
+  except FileNotFoundError: 
+    print(f'In fly(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
+
+#=============================================================================================================
 
 #=============================================================================================================
 # BUY
@@ -1548,527 +2021,8 @@ async def mooshroom_subcommand(ctx, amount: int = None):
 
 #=============================================================================================================
 
-
-
-
-#=============================================================================================================
-#   HELP
-
-@bot.group(invoke_without_command = True, pass_context = True)
-async def help(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = "Mr. Morale Command Center", description = 'epic diskord bott', color = random.choice(random_colors))
-  
-  embed.add_field(name = ':smile: Fun', value = f'`{x}help fun`', inline = True)
-
-  embed.add_field(name = ':hammer: Moderation', value = f"`{x}help moderation`", inline = False)
-
-  embed.add_field(name = ':money_with_wings: Economy', value = f"`{x}help economy`", inline = False)
-
-  embed.add_field(name = ':alien: Other', value = f"`{x}help other`", inline = False)
-
-  embed.add_field(name = ':axe: Settings', value = f"`{x}help settings`", inline = False)
-
-  embed.add_field(name = ':b: Text', value = f'`{x}help text`', inline = False)
-
-  embed.set_footer(text = f'use `{x}` before each command!')
-
-  await ctx.send(embed = embed)
-
-
-@help.command(name = 'economy')
-async def economy_subcommand(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-  
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = ":money_with_wings: Economy Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`, `give`', color = random.choice(random_colors))
-  embed.set_footer(text = f'use `{x}` before each command!')
-  await ctx.send(embed = embed)
-
-
-@help.command(name = 'fun')
-async def fun_subcommand(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-  
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = ":smile: Fun Commands", description = '`fat`, `meme`, `automemez`, `stopmemez`, `youtube`, `urban`, `supreme`, `reverse`, `dog`, `cat`, `birb`, `duck`, `coinflip`', color = random.choice(random_colors))
-  embed.set_footer(text = f'use `{x}` before each command!')
-  await ctx.send(embed = embed)
-
-
-@help.command(name = 'moderation')
-async def mod_subcommand(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-  
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = ":hammer: Moderation Commands", description = '`kick`, `ban`, `unban`, `purge`, `userinfo`, `warn`, `createrole`, `changenick`, `reactionmessage`, `membermessage`, `setmembermessage`, `setchannelid`, `viewmembermessage`, `autopurge`, `stoppurge`, `new`, `delete`, `lock`, `unlock`', color = random.choice(random_colors))
-  embed.set_footer(text = f'use `{x}` before each command!')
-  await ctx.send(embed = embed)
-
-
-@help.command(name = 'other')
-async def other_subcommand(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-  
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = ':alien: Other Commands', description = '`mainstuff`, `dmdev`', color = random.choice(random_colors))
-  embed.set_footer(text = f'use `{x}` before each command!')
-  await ctx.send(embed = embed)
-
-
-@help.command(name = 'settings')
-async def settings_subcommand(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-  
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = ':axe: Setting Commands', description = '`setprefix`, `resetprefix`', color = random.choice(random_colors))
-  embed.set_footer(text = f'use `{x}` before each command!')
-  await ctx.send(embed = embed)
-
-
-@help.command(name = 'text')
-async def text_subcommand(ctx):
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-  
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  embed = discord.Embed(title = ':b: Text Commands', description = '`bify`, `echo`, `ubi`, `underline`, `bold`, `italics`, `codeblock`, `strikethrough`, `underlineitalics`, `underlinebold`, `bolditalics`', color = random.choice(random_colors))
-  embed.set_footer(text = f'use `{x}` before each command!')
-  await ctx.send(embed = embed)
-
-#=============================================================================================================
-
-
-@bot.command()
-async def fat(ctx, member: discord.Member = None):
-  if member is None:
-    embed = discord.Embed(title="fatness determiner", description=f"You are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
-    await ctx.send(embed=embed)
-  else:
-    embed = discord.Embed(title="fatness determiner", description=f"{member.name} is {random.randint(1, 100)}% fat", color = random.choice(random_colors))
-    await ctx.send(embed=embed)
-  
-
-@bot.command(aliases = ['mm'])
-@has_permissions(manage_guild = True)
-async def membermessage(ctx):
-  global allowmembermessage
-  server = str(ctx.guild.id)
-  allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
-
-  if allowmembermessage[server] == 0:
-    await ctx.send('Sending messages when a member joins is set to: **True**\nCustomize the message in `le setmembermessage`')
-    allowmembermessage[server] = 1
-  else:
-    await ctx.send('Sending messages when a member joins is set to: **False**')
-    allowmembermessage[server] = 0
-
-  print(f'In beg(): Saving balances = {allowmembermessage}')
-  try: 
-    with open(ALLOW_MEMBER_MESSAGE, 'w') as fp: 
-      json.dump(allowmembermessage, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {ALLOW_MEMBER_MESSAGE} not found! Not sure what to do here!') 
-
-@bot.command(aliases = ['smm'])
-@has_permissions(manage_guild=True)
-async def setmembermessage(ctx, *, string: str):
-  global allowmembermessage, membermessage
-  server = str(ctx.guild.id)
-  allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
-  membermessage[server] = membermessage[server] if server in membermessage else ''
-
-  if allowmembermessage[server] == 1:
-    await ctx.send(f'The final result will look like this:\n***member is mentioned here***, {string}\nGood? `y` or `n`')
-    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-    if msg.content.lower() == 'y' or msg.content.lower() == 'Y':
-      membermessage[server] = string
-      await ctx.send('completed, btw you need to give me a proper channel id to send the messages to using `le setchannelid`\nif the id is not proper, then you can guess why its not working')
-    elif msg.content.lower() == 'N' or msg.content.lower() == 'n':
-      await ctx.send('rip lol you chose not to use that')
-      membermessage[server] == ''
-  else:
-    await ctx.send('you don\'t even have member joining messaging enabled! to do that do `le membermessage`')
-
-  print(f'In beg(): Saving balances = {membermessage}')
-  try: 
-    with open(MEMBER_MESSAGE, 'w') as fp: 
-      json.dump(membermessage, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {MEMBER_MESSAGE} not found! Not sure what to do here!') 
-  
-@bot.command()
-async def viewmembermessage(ctx):
-  global membermessage
-  server = str(ctx.guild.id)
-  if server in membermessage:
-    if membermessage[server] == '':
-      await ctx.send('You don\'t have a member joining message set!')
-    else:
-      await ctx.send(f'{membermessage[server]}')
-  else:
-    await ctx.send('You don\'t have a member joining message set!')
-
-@bot.command()
-@has_permissions(manage_guild = True)
-async def setchannelid(ctx, id: int):
-  global channel_id, allowmembermessage
-  server = str(ctx.guild.id)
-  allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
-  channel_id[server] = channel_id[server] if server in channel_id else 0
-  
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  
-
-  if len(str(id)) != 19:
-    await ctx.send('that isn\'t a valid channel id')
-    return
-    
-  if allowmembermessage[server] == 1:  
-    channel_id[server] = id
-    await ctx.send(f'set channel id as: `{id}`')
-  else:
-    await ctx.send(f'i can\'t do that without the member joining message function enabled buddy\nenable it by using `{x}membermessage`')
-
-  print(f'In beg(): Saving balances = {channel_id}')
-  try: 
-    with open(CHANNEL_ID, 'w') as fp: 
-      json.dump(channel_id, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {CHANNEL_ID} not found! Not sure what to do here!')
-
-@bot.command()
-@has_permissions(manage_guild = True)
-async def reactionmessage(ctx):
-  global allowreactionmessage
-  server = str(ctx.guild.id) 
-  allowreactionmessage[server] = allowreactionmessage[server] if server in allowreactionmessage else 0
-  if allowreactionmessage[server] == 0:
-    await ctx.send('Sending messages when reactions are executed is set to: **True**')
-    allowreactionmessage[server] = 1
-  else:
-    await ctx.send('Sending messages when reactions are executed is set to: **False**')
-    allowreactionmessage[server] = 0
-
-  print(f'In beg(): Saving balances = {allowreactionmessage}')
-  try: 
-    with open(ALLOW_REACTION_MESSAGE, 'w') as fp: 
-      json.dump(allowreactionmessage, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {ALLOW_REACTION_MESSAGE} not found! Not sure what to do here!') 
-
-@bot.command(pass_context=True)
-async def automemez(ctx, timeout: float):
-  global autoMeme
-  if timeout > 3:
-    autoMeme = True
-    await ctx.send(f'i will send reddit memes every {timeout} seconds, to stop this, use the command `stopmemez`')
-    while autoMeme == True:
-      await meme(ctx)
-      await asyncio.sleep(timeout)
-  else:
-    await ctx.send('rerun the command with a time value higher than `3` seconds')
-
-@bot.command()
-async def stopmemez(ctx):
-  global autoMeme
-  autoMeme = False
-  await ctx.send('done')
-
-@bot.command(pass_context=True)
-async def meme(ctx):
-  embed = discord.Embed(color = random.choice(random_colors))
-
-  async with aiohttp.ClientSession() as cs:
-    async with cs.get('https://www.reddit.com/u/kerdaloo/m/dankmemer/top/.json?sort=top&t=day&limit=500') as r:
-      res = await r.json()
-      embed.set_image(url = res['data']['children'] [random.randint(0, 30)]['data']['url'])
-      await ctx.send(embed=embed)
-
-
-@bot.command()
-async def darkhumor(ctx):
-  embed = discord.Embed(color = random.choice(random_colors))
-
-  async with aiohttp.ClientSession() as cs:
-    async with cs.get('https://www.reddit.com/r/DarkHumorAndMemes/new.json?sort=hot') as r:
-      res = await r.json()
-      embed.set_image(url = res['data']['children'] [random.randint(0, 25)]['data']['url'])
-      await ctx.send(embed=embed)
-
-#------------------------
-#------------------------
-#MOD COMMANDS
-#------------------------
-#------------------------   
-
-
-@bot.command()
-async def guess(ctx):
-  await ctx.send('guess a number from 1-10')
-  answer = random.randint(1, 10)
-  msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author, timeout = 6.0)
-
-  if msg.content.startswith(f'{answer}'):
-    await ctx.send('correct')
-  else:
-    await ctx.send(f'wrong, it was **{answer}**')
-
-
-
-#------------------------
-#------------------------
-#ECONOMY COMMANDS
-#------------------------
-#------------------------
-
-@bot.command(aliases = ['cm'])
-async def cowmarket(ctx):
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-  embed = discord.Embed(title = 'Cow Market', description = f'{x}purchase [ex: mooshroom]\n{x}stew [ex: mooshroom]', color = random.choice(random_colors))
-  embed.add_field(name = 'Basic Cows', value = '<:mooshroom:716492779391418440> **Mooshroom Cow**\n- Gives 15 ***mushroom stew*** every farm\n- Price: __14400__ coins\n- Can only be used 15 times, then it dies')
-  await ctx.send(embed = embed)
-
-@bot.command()
-@commands.cooldown(1, 1800, commands.BucketType.user)
-async def stew(ctx, arg):
-  global mooshroom_cows, times_mooshroom, bowls, mushroom_stew
-  user = str(ctx.message.author.id)
-  mooshroom_cows[user] = mooshroom_cows[user] if user in mooshroom_cows else 0
-  times_mooshroom[user] = times_mooshroom[user] if user in times_mooshroom else 0
-  bowls[user] = bowls[user] if user in bowls else 0
-  mushroom_stew[user] = mushroom_stew[user] if user in mushroom_stew else 0
-
-  if mooshroom_cows[user] > 0: 
-    if times_mooshroom[user] < 15:
-      if bowls[user] > 15 or bowls[user] == 15:
-        bowls[user] -= 15
-        mushroom_stew[user] += 15
-        times_mooshroom[user] += 1
-        embed = discord.Embed(title = f'{ctx.message.author.name}\'s harvest ', description = f"You just recieved <:mushstew:716492699879997530> **15** mushroom stew from your <:mooshroom:716492779391418440> mooshroom cow", color = random.choice(random_colors))
-        await ctx.send(embed = embed)   
-      else:
-        await ctx.send('You need at least 15 bowls for this!')
-    else:
-      await ctx.send('your <:mooshroom:716492779391418440> mooshroom cow has been used 15 times, making it weak, resulting in its perish')
-      await asyncio.sleep(3)
-      await ctx.send('may it rest in peace')
-      await asyncio.sleep(3)
-      await ctx.send('<:mooshroom:716492779391418440>')
-      mooshroom_cows[user] -= 1
-      times_mooshroom[user] = 0
-  else:
-    await ctx.send('YOU DONT EVEN HAVE A COW LMAO')
-
-  print(f'In buy(): Saving sheeps = {bowls}')
-  try: 
-    with open(BOWLS_FILE, 'w') as fp: 
-      json.dump(bowls, fp) 
-  except FileNotFoundError: 
-    print(f'In buy(): File {BOWLS_FILE} not found! Not sure what to do here!') 
-
-  print(f'In beg(): Saving balances = {mooshroom_cows}')
-  try: 
-    with open(MOOSHROOM_COW_FILE, 'w') as fp: 
-      json.dump(mooshroom_cows, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {MOOSHROOM_COW_FILE} not found! Not sure what to do here!') 
-  
-  print(f'In beg(): Saving balances = {times_mooshroom}')
-  try: 
-    with open(TIMES_MOOSHROOM, 'w') as fp: 
-      json.dump(times_mooshroom, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {TIMES_MOOSHROOM} not found! Not sure what to do here!') 
-
-  print(f'In beg(): Saving balances = {mushroom_stew}')
-  try: 
-    with open(MUSHROOM_STEW_FILE, 'w') as fp: 
-      json.dump(mushroom_stew, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {MUSHROOM_STEW_FILE} not found! Not sure what to do here!') 
-
-@bot.command()
-async def setbank(ctx, member: discord.Member, amount: int):
-  global balances
-  user = str(ctx.message.author.id)
-  member2 = str(member.id)
-  if user == '707091184115253248':
-    if member2 in balances:
-      balances[member2] = amount
-      await ctx.send(f'{member.name}\'s bank account value has been set to : **{amount}**')
-    else:
-      balances[member2] = amount
-      await ctx.send(f'they didnt have a bank account, they do now with {amount} coins')
-
-  else:
-    await ctx.send('only the **OWNER** of this bot can use this ')
-
-  print(f'In beg(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-@bot.command()
-@commands.cooldown(1, 90, commands.BucketType.user)
-async def twitch(ctx):
-  global balances, pc
-  user = str(ctx.message.author.id)
-  pc[user] = pc[user] if user in pc else 0
-  CHANCE = random.randint(1, 100)
-  random_coins = random.randint(500, 1000)
-
-  if pc[user] > 0:
-    await ctx.send('what do you want to stream today?\n`fortnite`, `minecraft`, `pubg`, or `valorant`')
-    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-    
-    if msg.content.lower() == 'fortnite':
-      if CHANCE <= 75:
-        await ctx.send(f'you streamed fortnite and turns out people actually liked it\nyou earned **{random_coins}** coins')
-        balances[user] += random_coins
-      elif CHANCE > 75 and CHANCE < 80:
-        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have {pc[user]} pc(s) left')
-      else:
-        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
-    elif msg.content.lower() == 'minecraft':
-      if CHANCE <= 75:
-        await ctx.send(f'you streamed sum mc and turns out people actually liked it\nyou earned **{random_coins}** coins')
-        balances[user] += random_coins
-      elif CHANCE > 75 and CHANCE < 80:
-        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have {pc[user]} pc(s) left')
-      else:
-        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
-    elif msg.content.lower() == 'pubg':
-      if CHANCE <= 75:
-        await ctx.send(f'you streamed pubg and turns out people actually liked it\nyou earned **{random_coins}** coins')
-        balances[user] += random_coins
-      elif CHANCE > 75 and CHANCE < 80:
-        pc[user] -= 1
-        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have **{pc[user]}** pc(s) left')
-      else:
-        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
-    elif msg.content.lower() == 'valorant':
-      if CHANCE <= 75:
-        await ctx.send(f'you streamed valorant and turns out people actually liked it\nyou earned **{random_coins}** coins')
-        balances[user] += random_coins
-      elif CHANCE > 75 and CHANCE < 80:
-        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have {pc[user]} pc(s) left')
-      else:
-        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
-    else:
-      await ctx.send('does that look like an option ')
-  else:
-    await ctx.send('u don\'t have a pc')
-
-  print(f'In buy(): Saving sheeps = {pc}')
-  try: 
-    with open(PC_FILE, 'w') as fp: 
-      json.dump(pc, fp) 
-  except FileNotFoundError: 
-    print(f'In buy(): File {PC_FILE} not found! Not sure what to do here!') 
-
-  print(f'In beg(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-
-@bot.command()
-async def city(ctx):
-  global locations, cities, citypop, entertainment_lvl, park_lvl, power_lvl, water_lvl, waste_lvl, health_lvl, fire_lvl, police_lvl
-  user = str(ctx.message.author.id)
-  cities[user] = cities[user] if user in cities else 0
-  locations[user] = locations[user] if user in locations else 0
-  citypop[user] = citypop[user] if user in citypop else 0
-  entertainment_lvl[user] = entertainment_lvl[user] if user in entertainment_lvl else 0
-  park_lvl[user] = park_lvl[user] if user in park_lvl else 0
-  power_lvl[user] = power_lvl[user] if user in power_lvl else 0
-  water_lvl[user] = water_lvl[user] if user in water_lvl else 0
-  waste_lvl[user] = waste_lvl[user] if user in waste_lvl else 0
-  health_lvl[user] = health_lvl[user] if user in health_lvl else 0
-  fire_lvl[user] = fire_lvl[user] if user in fire_lvl else 0 
-  police_lvl[user] = police_lvl[user] if user in police_lvl else 0
-
-  ent_pop_added = entertainment_lvl[user] * 867
-  park_pop_added = park_lvl[user] * 1001
-  power_pop_added = power_lvl[user] * 2467
-  water_pop_added = water_lvl[user] * 2227
-  waste_pop_added = waste_lvl[user] * 3142
-  health_pop_added = health_lvl[user] * 7819
-  fire_pop_added = fire_lvl[user] * 6231
-  police_pop_added = police_lvl[user] * 9331
-
-  #medium then advanced then normal
-
-  if locations[user] == 1:
-    if cities[user] == 1:
-      if power_lvl[user] == 4 and water_lvl[user] in [5, 6, 7] and waste_lvl[user] in [3, 4] and health_lvl[user] in [2, 3] and park_lvl[user] == 5 and entertainment_lvl[user] in [3, 4, 5, 6] and fire_lvl[user] in [2, 3] and police_lvl[user] in [2, 3]:
-        embed = discord.Embed(title = f':city_dusk: {ctx.message.author.name}\'s Medium city', description = '`le requirements [medium/advanced city]`\n`le upgrade [Section]`\n`le collect [section]`', color = random.choice(random_colors))
-        embed.add_field(name = '__**Overview**__', value = f':man: **Population**: __**{citypop[user]:,d}**__', inline = False)
-        embed.add_field(name = '__**Basic City Needs**__', value = f':cloud_lightning: **Power**: Lvl: {power_lvl[user]:,d}\n\tPopulation Added: **{power_pop_added:,d}**\n:cup_with_straw: **Water**: Lvl: {water_lvl[user]:,d}\n\tPopulation Added: **{water_pop_added:,d}**\n:wastebasket: **Waste**: Lvl: {waste_lvl[user]:,d}\n\tPopulation Added: **{waste_pop_added:,d}**', inline = True)
-        embed.add_field(name = '__**Urgent Needs**__', value = f':fire_engine: **Fire Station**: Lvl : {fire_lvl[user]:,d}\n\tPopulation Added: **{fire_pop_added:,d}**\n:police_car: **Police Station**: Lvl: {police_lvl[user]:,d}\n\tPopulation Added: **{police_pop_added:,d}**\n:ambulance: **Health**: Lvl: {health_lvl[user]:,d}\n\tPopulation Added: **{health_pop_added:,d}**', inline = False)
-        embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
-        await ctx.send(embed = embed)
-      elif power_lvl[user] == 5 and water_lvl[user] == 8 and waste_lvl[user] == 5 and health_lvl[user] == 4 and entertainment_lvl[user] == 7 and park_lvl[user] == 6 and fire_lvl[user] == 4 and police_lvl[user] == 4:
-        embed = discord.Embed(title = f':city_dusk: {ctx.message.author.name}\'s Advanced city', description = '`le requirements [medium/advanced city]`\n`le upgrade [Section]`\n`le collect [section]`', color = random.choice(random_colors))
-        embed.add_field(name = '__**Overview**__', value = f':man: **Population**: __**{citypop[user]:,d}**__', inline = False)
-        embed.add_field(name = '__**Basic City Needs**__', value = f':cloud_lightning: **Power**: Lvl: {power_lvl[user]:,d}\n\tPopulation Added: **{power_pop_added:,d}**\n:cup_with_straw: **Water**: Lvl: {water_lvl[user]:,d}\n\tPopulation Added: **{water_pop_added:,d}**\n:wastebasket: **Waste**: Lvl: {waste_lvl[user]:,d}\n\tPopulation Added: **{waste_pop_added:,d}**', inline = True)
-        embed.add_field(name = '__**Urgent Needs**__', value = f':fire_engine: **Fire Station**: Lvl : {fire_lvl[user]:,d}\n\tPopulation Added: **{fire_pop_added:,d}**\n:police_car: **Police Station**: Lvl: {police_lvl[user]:,d}\n\tPopulation Added: **{police_pop_added:,d}**\n:ambulance: **Health**: Lvl: {health_lvl[user]:,d}\n\tPopulation Added: **{health_pop_added:,d}**', inline = False)
-        embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
-        await ctx.send(embed = embed)
-      else:
-        embed = discord.Embed(title = f':city_dusk: {ctx.message.author.name}\'s city', description = '`le requirements [medium/advanced city]`\n`le upgrade [Section]`\n`le collect [section]`', color = random.choice(random_colors))
-        embed.add_field(name = '__**Overview**__', value = f':man: **Population**: __**{citypop[user]:,d}**__', inline = False)
-        embed.add_field(name = '__**Basic City Needs**__', value = f':cloud_lightning: **Power**: Lvl: {power_lvl[user]:,d}\n\tPopulation Added: **{power_pop_added:,d}**\n:cup_with_straw: **Water**: Lvl: {water_lvl[user]:,d}\n\tPopulation Added: **{water_pop_added:,d}**\n:wastebasket: **Waste**: Lvl: {waste_lvl[user]:,d}\n\tPopulation Added: **{waste_pop_added:,d}**', inline = True)
-        embed.add_field(name = '__**Urgent Needs**__', value = f':fire_engine: **Fire Station**: Lvl : {fire_lvl[user]:,d}\n\tPopulation Added: **{fire_pop_added:,d}**\n:police_car: **Police Station**: Lvl: {police_lvl[user]:,d}\n\tPopulation Added: **{police_pop_added:,d}**\n:ambulance: **Health**: Lvl: {health_lvl[user]:,d}\n\tPopulation Added: **{health_pop_added:,d}**', inline = False)
-        embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
-        await ctx.send(embed = embed)
-    else:
-      await ctx.send('You don\'t have a city! To get one, do `le create`')
-  else:
-    await ctx.send('You must be in Texas in order to view/create your city')
-
-
-@bot.command()
-async def youtube(ctx, *, search):
-  
-  query_string = urllib.parse.urlencode({'search_query': search})
-  htm_content = urllib.request.urlopen('https://www.youtube.com/results?' + query_string)
-  search_results = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
-  await ctx.send('http://www.youtube.com/watch?v=' + search_results[0])
+#============================================================================
+# UPGRADE
 
 @bot.group(pass_context = True)
 async def upgrade(ctx):
@@ -2720,10 +2674,6 @@ async def power(ctx):
   except FileNotFoundError: 
     print(f'In sell(): File {POWER_LVL_FILE} not found! Not sure what to do here!') 
 
-
-
-
-
 @upgrade.command()
 async def entertainment(ctx):
   global meats, balances, rices, salads, citypop, entertainment_lvl, cities
@@ -2826,6 +2776,8 @@ async def entertainment(ctx):
     print(f'In sell(): File {CITYPOP_FILE} not found! Not sure what to do here!') 
 
 #=============================================================================================================
+
+#=============================================================================================================
 # REQUIREMENTS
 
 @bot.group(pass_context = True)
@@ -2845,6 +2797,8 @@ async def advanced_subcommand(ctx):
 
 #=============================================================================================================
 
+#=============================================================================================================
+# COLLECT
 
 @bot.group(pass_context = True)
 async def collect(ctx):
@@ -3147,7 +3101,6 @@ async def entertainment(ctx):
   except FileNotFoundError: 
     print(f'In sell(): File {BUFFALOS_FILE} not found! Not sure what to do here!') 
 
-
 @collect.command()
 @commands.cooldown(1, 86400, commands.BucketType.user)
 async def parks(ctx):
@@ -3195,8 +3148,6 @@ async def parks(ctx):
       json.dump(buffalos, fp) 
   except FileNotFoundError: 
     print(f'In sell(): File {BUFFALOS_FILE} not found! Not sure what to do here!') 
-
-
 
 @collect.command()
 @commands.cooldown(1, 86400, commands.BucketType.user)
@@ -3247,6 +3198,197 @@ async def power(ctx):
   except FileNotFoundError: 
     print(f'In sell(): File {BUFFALOS_FILE} not found! Not sure what to do here!') 
 
+#=============================================================================================================
+
+@bot.command(aliases = ['cm'])
+async def cowmarket(ctx):
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+  embed = discord.Embed(title = 'Cow Market', description = f'{x}purchase [ex: mooshroom]\n{x}stew [ex: mooshroom]', color = random.choice(random_colors))
+  embed.add_field(name = 'Basic Cows', value = '<:mooshroom:716492779391418440> **Mooshroom Cow**\n- Gives 15 ***mushroom stew*** every farm\n- Price: __14400__ coins\n- Can only be used 15 times, then it dies')
+  await ctx.send(embed = embed)
+
+@bot.command()
+@commands.cooldown(1, 1800, commands.BucketType.user)
+async def stew(ctx, arg):
+  global mooshroom_cows, times_mooshroom, bowls, mushroom_stew
+  user = str(ctx.message.author.id)
+  mooshroom_cows[user] = mooshroom_cows[user] if user in mooshroom_cows else 0
+  times_mooshroom[user] = times_mooshroom[user] if user in times_mooshroom else 0
+  bowls[user] = bowls[user] if user in bowls else 0
+  mushroom_stew[user] = mushroom_stew[user] if user in mushroom_stew else 0
+
+  if mooshroom_cows[user] > 0: 
+    if times_mooshroom[user] < 15:
+      if bowls[user] > 15 or bowls[user] == 15:
+        bowls[user] -= 15
+        mushroom_stew[user] += 15
+        times_mooshroom[user] += 1
+        embed = discord.Embed(title = f'{ctx.message.author.name}\'s harvest ', description = f"You just recieved <:mushstew:716492699879997530> **15** mushroom stew from your <:mooshroom:716492779391418440> mooshroom cow", color = random.choice(random_colors))
+        await ctx.send(embed = embed)   
+      else:
+        await ctx.send('You need at least 15 bowls for this!')
+    else:
+      await ctx.send('your <:mooshroom:716492779391418440> mooshroom cow has been used 15 times, making it weak, resulting in its perish')
+      await asyncio.sleep(3)
+      await ctx.send('may it rest in peace')
+      await asyncio.sleep(3)
+      await ctx.send('<:mooshroom:716492779391418440>')
+      mooshroom_cows[user] -= 1
+      times_mooshroom[user] = 0
+  else:
+    await ctx.send('YOU DONT EVEN HAVE A COW LMAO')
+
+  print(f'In buy(): Saving sheeps = {bowls}')
+  try: 
+    with open(BOWLS_FILE, 'w') as fp: 
+      json.dump(bowls, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {BOWLS_FILE} not found! Not sure what to do here!') 
+
+  print(f'In beg(): Saving balances = {mooshroom_cows}')
+  try: 
+    with open(MOOSHROOM_COW_FILE, 'w') as fp: 
+      json.dump(mooshroom_cows, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {MOOSHROOM_COW_FILE} not found! Not sure what to do here!') 
+  
+  print(f'In beg(): Saving balances = {times_mooshroom}')
+  try: 
+    with open(TIMES_MOOSHROOM, 'w') as fp: 
+      json.dump(times_mooshroom, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {TIMES_MOOSHROOM} not found! Not sure what to do here!') 
+
+  print(f'In beg(): Saving balances = {mushroom_stew}')
+  try: 
+    with open(MUSHROOM_STEW_FILE, 'w') as fp: 
+      json.dump(mushroom_stew, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {MUSHROOM_STEW_FILE} not found! Not sure what to do here!') 
+
+@bot.command()
+@commands.cooldown(1, 90, commands.BucketType.user)
+async def twitch(ctx):
+  global balances, pc
+  user = str(ctx.message.author.id)
+  pc[user] = pc[user] if user in pc else 0
+  CHANCE = random.randint(1, 100)
+  random_coins = random.randint(500, 1000)
+
+  if pc[user] > 0:
+    await ctx.send('what do you want to stream today?\n`fortnite`, `minecraft`, `pubg`, or `valorant`')
+    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+    
+    if msg.content.lower() == 'fortnite':
+      if CHANCE <= 75:
+        await ctx.send(f'you streamed fortnite and turns out people actually liked it\nyou earned **{random_coins}** coins')
+        balances[user] += random_coins
+      elif CHANCE > 75 and CHANCE < 80:
+        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have {pc[user]} pc(s) left')
+      else:
+        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
+    elif msg.content.lower() == 'minecraft':
+      if CHANCE <= 75:
+        await ctx.send(f'you streamed sum mc and turns out people actually liked it\nyou earned **{random_coins}** coins')
+        balances[user] += random_coins
+      elif CHANCE > 75 and CHANCE < 80:
+        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have {pc[user]} pc(s) left')
+      else:
+        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
+    elif msg.content.lower() == 'pubg':
+      if CHANCE <= 75:
+        await ctx.send(f'you streamed pubg and turns out people actually liked it\nyou earned **{random_coins}** coins')
+        balances[user] += random_coins
+      elif CHANCE > 75 and CHANCE < 80:
+        pc[user] -= 1
+        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have **{pc[user]}** pc(s) left')
+      else:
+        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
+    elif msg.content.lower() == 'valorant':
+      if CHANCE <= 75:
+        await ctx.send(f'you streamed valorant and turns out people actually liked it\nyou earned **{random_coins}** coins')
+        balances[user] += random_coins
+      elif CHANCE > 75 and CHANCE < 80:
+        await ctx.send(f'your stream sucked so much, your pc exploded\nyou now have {pc[user]} pc(s) left')
+      else:
+        await ctx.send('nobody watched ur stream giving you **0** coins lmaooo')
+    else:
+      await ctx.send('does that look like an option ')
+  else:
+    await ctx.send('u don\'t have a pc')
+
+  print(f'In buy(): Saving sheeps = {pc}')
+  try: 
+    with open(PC_FILE, 'w') as fp: 
+      json.dump(pc, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {PC_FILE} not found! Not sure what to do here!') 
+
+  print(f'In beg(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+
+@bot.command()
+async def city(ctx):
+  global locations, cities, citypop, entertainment_lvl, park_lvl, power_lvl, water_lvl, waste_lvl, health_lvl, fire_lvl, police_lvl
+  user = str(ctx.message.author.id)
+  cities[user] = cities[user] if user in cities else 0
+  locations[user] = locations[user] if user in locations else 0
+  citypop[user] = citypop[user] if user in citypop else 0
+  entertainment_lvl[user] = entertainment_lvl[user] if user in entertainment_lvl else 0
+  park_lvl[user] = park_lvl[user] if user in park_lvl else 0
+  power_lvl[user] = power_lvl[user] if user in power_lvl else 0
+  water_lvl[user] = water_lvl[user] if user in water_lvl else 0
+  waste_lvl[user] = waste_lvl[user] if user in waste_lvl else 0
+  health_lvl[user] = health_lvl[user] if user in health_lvl else 0
+  fire_lvl[user] = fire_lvl[user] if user in fire_lvl else 0 
+  police_lvl[user] = police_lvl[user] if user in police_lvl else 0
+
+  ent_pop_added = entertainment_lvl[user] * 867
+  park_pop_added = park_lvl[user] * 1001
+  power_pop_added = power_lvl[user] * 2467
+  water_pop_added = water_lvl[user] * 2227
+  waste_pop_added = waste_lvl[user] * 3142
+  health_pop_added = health_lvl[user] * 7819
+  fire_pop_added = fire_lvl[user] * 6231
+  police_pop_added = police_lvl[user] * 9331
+
+  #medium then advanced then normal
+
+  if locations[user] == 1:
+    if cities[user] == 1:
+      if power_lvl[user] == 4 and water_lvl[user] in [5, 6, 7] and waste_lvl[user] in [3, 4] and health_lvl[user] in [2, 3] and park_lvl[user] == 5 and entertainment_lvl[user] in [3, 4, 5, 6] and fire_lvl[user] in [2, 3] and police_lvl[user] in [2, 3]:
+        embed = discord.Embed(title = f':city_dusk: {ctx.message.author.name}\'s Medium city', description = '`le requirements [medium/advanced city]`\n`le upgrade [Section]`\n`le collect [section]`', color = random.choice(random_colors))
+        embed.add_field(name = '__**Overview**__', value = f':man: **Population**: __**{citypop[user]:,d}**__', inline = False)
+        embed.add_field(name = '__**Basic City Needs**__', value = f':cloud_lightning: **Power**: Lvl: {power_lvl[user]:,d}\n\tPopulation Added: **{power_pop_added:,d}**\n:cup_with_straw: **Water**: Lvl: {water_lvl[user]:,d}\n\tPopulation Added: **{water_pop_added:,d}**\n:wastebasket: **Waste**: Lvl: {waste_lvl[user]:,d}\n\tPopulation Added: **{waste_pop_added:,d}**', inline = True)
+        embed.add_field(name = '__**Urgent Needs**__', value = f':fire_engine: **Fire Station**: Lvl : {fire_lvl[user]:,d}\n\tPopulation Added: **{fire_pop_added:,d}**\n:police_car: **Police Station**: Lvl: {police_lvl[user]:,d}\n\tPopulation Added: **{police_pop_added:,d}**\n:ambulance: **Health**: Lvl: {health_lvl[user]:,d}\n\tPopulation Added: **{health_pop_added:,d}**', inline = False)
+        embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
+        await ctx.send(embed = embed)
+      elif power_lvl[user] == 5 and water_lvl[user] == 8 and waste_lvl[user] == 5 and health_lvl[user] == 4 and entertainment_lvl[user] == 7 and park_lvl[user] == 6 and fire_lvl[user] == 4 and police_lvl[user] == 4:
+        embed = discord.Embed(title = f':city_dusk: {ctx.message.author.name}\'s Advanced city', description = '`le requirements [medium/advanced city]`\n`le upgrade [Section]`\n`le collect [section]`', color = random.choice(random_colors))
+        embed.add_field(name = '__**Overview**__', value = f':man: **Population**: __**{citypop[user]:,d}**__', inline = False)
+        embed.add_field(name = '__**Basic City Needs**__', value = f':cloud_lightning: **Power**: Lvl: {power_lvl[user]:,d}\n\tPopulation Added: **{power_pop_added:,d}**\n:cup_with_straw: **Water**: Lvl: {water_lvl[user]:,d}\n\tPopulation Added: **{water_pop_added:,d}**\n:wastebasket: **Waste**: Lvl: {waste_lvl[user]:,d}\n\tPopulation Added: **{waste_pop_added:,d}**', inline = True)
+        embed.add_field(name = '__**Urgent Needs**__', value = f':fire_engine: **Fire Station**: Lvl : {fire_lvl[user]:,d}\n\tPopulation Added: **{fire_pop_added:,d}**\n:police_car: **Police Station**: Lvl: {police_lvl[user]:,d}\n\tPopulation Added: **{police_pop_added:,d}**\n:ambulance: **Health**: Lvl: {health_lvl[user]:,d}\n\tPopulation Added: **{health_pop_added:,d}**', inline = False)
+        embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
+        await ctx.send(embed = embed)
+      else:
+        embed = discord.Embed(title = f':city_dusk: {ctx.message.author.name}\'s city', description = '`le requirements [medium/advanced city]`\n`le upgrade [Section]`\n`le collect [section]`', color = random.choice(random_colors))
+        embed.add_field(name = '__**Overview**__', value = f':man: **Population**: __**{citypop[user]:,d}**__', inline = False)
+        embed.add_field(name = '__**Basic City Needs**__', value = f':cloud_lightning: **Power**: Lvl: {power_lvl[user]:,d}\n\tPopulation Added: **{power_pop_added:,d}**\n:cup_with_straw: **Water**: Lvl: {water_lvl[user]:,d}\n\tPopulation Added: **{water_pop_added:,d}**\n:wastebasket: **Waste**: Lvl: {waste_lvl[user]:,d}\n\tPopulation Added: **{waste_pop_added:,d}**', inline = True)
+        embed.add_field(name = '__**Urgent Needs**__', value = f':fire_engine: **Fire Station**: Lvl : {fire_lvl[user]:,d}\n\tPopulation Added: **{fire_pop_added:,d}**\n:police_car: **Police Station**: Lvl: {police_lvl[user]:,d}\n\tPopulation Added: **{police_pop_added:,d}**\n:ambulance: **Health**: Lvl: {health_lvl[user]:,d}\n\tPopulation Added: **{health_pop_added:,d}**', inline = False)
+        embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
+        await ctx.send(embed = embed)
+    else:
+      await ctx.send('You don\'t have a city! To get one, do `le create`')
+  else:
+    await ctx.send('You must be in Texas in order to view/create your city')
 
 @bot.command()
 async def key(ctx):
@@ -3255,8 +3397,6 @@ async def key(ctx):
   embed.add_field(name = '**Sheep**', value = '- Price: **100** coins\n- Gives **3** wool per sheep harvest\n- 1 wool sells for **15** coins')
   embed.add_field(name = '**Rice**', value = '- Price: **30** coins\n- Gives **4** wheat per rice harvest\n- 1 wheat sells for **10** coins')
   await ctx.send(embed = embed)
-
-
 
 @bot.command()
 async def create(ctx):
@@ -3309,10 +3449,6 @@ async def create(ctx):
   except FileNotFoundError: 
     print(f'In balances(): File {CITIES_FILE} not found! Not sure what to do here!') 
 
-
-
-
-
 @bot.command()
 @commands.cooldown(1, 86400, commands.BucketType.user)
 async def daily(ctx):
@@ -3328,10 +3464,6 @@ async def daily(ctx):
       json.dump(balances, fp) 
   except FileNotFoundError: 
     print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-
-
-
 
 @bot.command()
 async def farm(ctx):
@@ -3389,7 +3521,6 @@ async def farm(ctx):
     embed.add_field(name = '\nItems [MISCELLANEOUS]', value = f':bowl_with_spoon: Bowl | {bowls[user]}', inline = False)
     await ctx.send(embed=embed)
 
-
 @bot.command()
 async def profile(ctx, member: discord.Member = None):
   global commands2, levels, exp
@@ -3438,10 +3569,6 @@ async def grab(ctx):
     balances[user] = START_BAL 
     await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {START_BAL}') 
 
-
-
-
-
 @bot.command()
 async def give(ctx, member: discord.Member, amount: int):
   global balances
@@ -3468,10 +3595,6 @@ async def give(ctx, member: discord.Member, amount: int):
       json.dump(balances, fp) 
   except FileNotFoundError: 
     print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-
-
-
 
 @bot.command()
 @commands.cooldown(1, 3600, commands.BucketType.user)
@@ -3501,19 +3624,11 @@ async def work(ctx):
   except FileNotFoundError: 
     print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
 
-
-
-
-
 @bot.command()
 async def notebook(ctx):
   embed = discord.Embed(title = "Grandma Esther's notebook", description = "only boomers keep recipes in a notebook", color = random.choice(random_colors))
   embed.add_field(name = ":salad: Salad", value = "Ingredients | 5 Cooked Chicken, 9 Rice")
   await ctx.send(embed = embed)
-
-
-
-
 
 @bot.command()
 async def combine(ctx, arg1, arg2):
@@ -3561,19 +3676,11 @@ async def combine(ctx, arg1, arg2):
   except FileNotFoundError: 
     print(f'In sell(): File {COOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
 
-
-
-
-
 @bot.command()
 async def pharmacy(ctx):
   embed = discord.Embed(title = "Mr. Morale's underground pharmacy", description = "`buy <item> <amount>` or `sell <item> <amount>`\n No selling `ambulance` because it is too rare.", color = random.choice(random_colors))
   embed.add_field(name = ":medical_symbol: Meds", value = ":ambulance: Ambulance | Price: :cut_of_meat: __15200__ | Puts your health back to 100\n:french_bread: Bread | Price: __1200__ coins | Puts health exactly at 60")
   await ctx.send(embed = embed)
-
-
-
-
 
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
@@ -3615,10 +3722,6 @@ async def rice(ctx):
   except FileNotFoundError: 
     print(f'In sell(): File {HEALTH_FILE} not found! Not sure what to do here!') 
 
-
-
-
-
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
 async def sheep(ctx):
@@ -3637,7 +3740,6 @@ async def sheep(ctx):
       await ctx.send('You don\'t have any sheep')
   else:
     await ctx.send('You don\'t have enough health for this action!')
-
 
   print(f'In sell(): Saving sheep = {sheeps}')
   try: 
@@ -3659,10 +3761,6 @@ async def sheep(ctx):
       json.dump(healths, fp) 
   except FileNotFoundError: 
     print(f'In sell(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-
-
-
 
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
@@ -3713,10 +3811,6 @@ async def buffalo(ctx):
       json.dump(healths, fp) 
   except FileNotFoundError: 
     print(f'In sell(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-
-
-
 
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
@@ -3774,10 +3868,6 @@ async def cook(ctx, arg):
   except FileNotFoundError: 
     print(f'In sell(): File {COOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
 
-
-
-
-
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
 async def pig(ctx):
@@ -3829,10 +3919,6 @@ async def popeyes(ctx):
   embed.add_field(name = ":hatched_chick: Uncooked Chicken [ANIMAL]", value = "Price: __10,000__ coins")
   await ctx.send(embed = embed)
 
-
-
-
-
 @bot.command()
 async def shop(ctx):
   embed = discord.Embed(title = "Mr. Morale's secret shop", description = "`le buy <item> <amount>` or `le sell <item> <amount>`\n`le farm`\nGoods are not able to be purchased", color = random.choice(random_colors))
@@ -3841,10 +3927,6 @@ async def shop(ctx):
   embed.add_field(name = "Crops\n", value = "\n:rice: **Rice** ─ __30__ coins ─ Item", inline = False)
   embed.add_field(name = "Miscellaneous\n", value = "\n:desktop: **PC** ─ __1,500__ coins ─ Item\n<:bowl:716492750996111441> **Bowl** ─ __50__ coins ─ Item")
   await ctx.send(embed=embed)
-
-
-
-
 
 @bot.command()
 async def jetshop(ctx):
@@ -3860,152 +3942,6 @@ async def jetshop(ctx):
   embed.add_field(name = ':airplane_small: Morris X8200', value = 'small but fiesty jet, 25% chance of getting air sickness\n`Price: 1500 Meat, 3 Salads, 5000 wheat, 10000 coins`', inline = True)
   embed.add_field(name = ':airplane: Douglas 900ER', value = 'Wanna travel far without problems, here\'s your answer!\n`Price: 5000 Meat, 20 Salads, 10 Stoves, 75000 coins`', inline = False)
   await ctx.send(embed = embed)
-
-
-#=============================================================================================================
-# FLY
-
-# 0 IS CALIFORNIA
-# 1 IS TEXAS
-
-@bot.group(pass_context = True)
-async def fly(ctx):
-  if ctx.subcommand_passed is None:
-    await ctx.send('Proper Usage: `fly [morris/douglas]`')
-  elif ctx.invoked_subcommand is None:
-    await ctx.send(f"that plane doesn't exist buddy")
-
-@fly.command(name = 'morris')
-async def morris_flysubcommand(ctx):
-  global morris, locations, healths
-  user = str(ctx.message.author.id)
-  locations[user] = locations[user] if user in locations else 0
-  morris[user] = morris[user] if user in morris else 0
-  healths[user] = healths[user] if user in healths else 0
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  if morris[user] >= 1:
-    await ctx.send('You have a 25% chance of getting air sick, causing you to lose about 5-9 health.\nStill want to fly on this plane? `y` or `n`')
-    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-    if msg.content.lower() == 'y':
-      if healths[user] < 9:
-        await ctx.send('you do not have enough health to risk this flight')
-        return
-      await ctx.send('Where do you want to travel? `Texas` or `California`?')
-      msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-      if msg.content.lower() == 'california':
-        if locations[user] == 0:
-          await ctx.send('you are already in california')
-          return
-        elif locations[user] == 1:
-          CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
-          HEALTH_LOSS = random.randint(5, 9)
-          await ctx.send('travelling back to California!')
-          if CHANCE_OF_GETTING_AIR_SICK <= 25:
-            healths[user] -= HEALTH_LOSS
-            await ctx.send(f'welp you got air sick, causing you to lose {HEALTH_LOSS} health')
-            locations[user] = 0
-            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
-          else:
-            locations[user] = 0
-            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
-        else:
-          await ctx.send('you don\'t have a location value')
-      elif msg.content.lower() == 'texas':
-        if locations[user] == 1:
-          await ctx.send('you are already in Texas')
-          return
-        elif locations[user] == 0:
-          CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
-          HEALTH_LOSS = random.randint(5, 9)
-          await ctx.send('Travelling to Texas!')
-          if CHANCE_OF_GETTING_AIR_SICK > 25:
-            await ctx.send(f'you got air sick, causing you to lose {HEALTH_LOSS} health')
-            healths[user] -= HEALTH_LOSS
-            locations[user] = 1
-            await asyncio.sleep(1.5)
-            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
-          else:
-            locations[user] = 1
-            await asyncio.sleep(1.5)
-            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
-        else:
-          await ctx.send('you don\'t have a location value')
-      else:
-        await ctx.send('not an option; rerun the command')
-    elif msg.content.lower() == 'n':
-      await ctx.send('alright, flight cancelled')
-  else:
-    await ctx.send('You don\'t have the Morris jet!')
-
-  print(f'In fly(): Saving locations = {locations}')
-  try: 
-    with open(LOCATIONS_FILE, 'w') as fp: 
-      json.dump(locations, fp) 
-  except FileNotFoundError: 
-    print(f'In fly(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
-
-  print(f'In fly(): Saving healths = {healths}')
-  try: 
-    with open(HEALTH_FILE, 'w') as fp: 
-      json.dump(healths, fp) 
-  except FileNotFoundError: 
-    print(f'In fly(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-@fly.command(name = 'douglas')
-async def douglas_flysubcommand(ctx):
-  global douglas, locations
-  user = str(ctx.message.author.id)
-  locations[user] = locations[user] if user in locations else 0
-  douglas[user] = douglas[user] if user in douglas else 0
-
-  with open(r"prefixes.json", 'r') as f:
-    prefixes = json.load(f)
-
-  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  if douglas[user] >= 1:
-    await ctx.send('Where do you want to travel? `Texas` or `California`?')
-    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-    if msg.content.lower() == 'california':
-      if locations[user] == 0:
-        await ctx.send('you are already in California')
-      elif locations[user] == 1:
-          await ctx.send('Travelling back to california!')
-          locations[user] = 0
-          await asyncio.sleep(1.5)
-          await ctx.send(f'You are in California now! Things to do are `{x}farm`')
-      else:
-        await ctx.send('you don\'t have a location value')
-    elif msg.content.lower() == 'texas':
-      if locations[user] == 1:
-        await ctx.send('you are already in Texas')
-      elif locations[user] == 0:
-          await ctx.send('Travelling to Texas!')
-          locations[user] = 1
-          await asyncio.sleep(1.5)
-          await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
-      else:
-        await ctx.send('you don\'t have a location value')
-    else:
-      await ctx.send('not an option; rerun the command')
-  else:
-    await ctx.send('You don\'t have the Douglas jet!')
-
-  print(f'In fly(): Saving locations = {locations}')
-  try: 
-    with open(LOCATIONS_FILE, 'w') as fp: 
-      json.dump(locations, fp) 
-  except FileNotFoundError: 
-    print(f'In fly(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
-
-
-#=============================================================================================================
-
 
 @bot.command()
 async def use(ctx, arg):
@@ -4164,7 +4100,6 @@ async def plead(ctx):
   print(f'In plead(): Author Id = {ctx.message.author.id}, Author Name = {user}')
 
   if user in balances: 
-    # print(f'In plead(): Found record for {user}. Incrementing balance by {random.randint(20,70)}')
     names = ["**Kanye West**", "**Lindsay Lohan**", "**Azealia Banks**", "**Justin Bieber**", "**Roseanne Barr**", "**Charlie Sheen**", "**Amanda Bynes**", "**Woody Allen**", "**Mel Gibson**", "**R. Kelly**"]
     await ctx.send(random.choice(names) + f' donated {INCREMENT} coins to {ctx.message.author.mention}!')
     balances[user] += INCREMENT
@@ -4198,21 +4133,10 @@ async def bal(ctx, member: discord.Member = None):
     else:
       await ctx.send('user doesn\'t have an acc')
 
-@bot.command()
-async def status(ctx, member: discord.Member = None):
-  if member is None:
-    member = ctx.message.author
+#=============================================================================================================
 
-  await ctx.send(member.status)
-  
-
-#===============
-#===============
+#=============================================================================================================
 # ERRORS
-#===============
-#===============
-
-
 
 @rice.error
 async def rice_error(ctx, error):
@@ -4406,7 +4330,6 @@ async def grab_error(ctx, error):
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to grab another airdrop ')
     return
 
-
 @cook.error
 async def cook_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
@@ -4416,14 +4339,12 @@ async def cook_error(ctx, error):
   elif isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `cook [chicken]`')
 
-
 @plead.error
 async def plead_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
     m, s = divmod(error.retry_after, 60)
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to plead again ')
     return
-
 
 @twitch.error
 async def stream_error(ctx, error):
@@ -4439,7 +4360,7 @@ async def work_error(ctx, error):
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to work again ')
     return
 
-
+#=============================================================================================================
 
 f = open("token.txt", "r")
 
