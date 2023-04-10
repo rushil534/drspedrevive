@@ -758,7 +758,7 @@ async def unblacklist(ctx, user: discord.Member):
 
 @bot.command(aliases = ['sp'])
 async def setprefix(ctx, *, pre):
-  await ctx.send('Would you like a space after the prefix?\nEx: [prefix] meme\n`y` or `n`')
+  await ctx.send('Would you like a space after the prefix?\nEx: [prefix] [command]\n`y` or `n`')
   msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
 
   if msg.content.lower() == 'y': 
@@ -767,7 +767,7 @@ async def setprefix(ctx, *, pre):
 
     pre2 = pre + ' '
     prefixes[str(ctx.guild.id)] = pre2
-    embed = discord.Embed(description = f'Changed prefix to `{pre}`', color = random.choice(random_colors))
+    embed = discord.Embed(description = f'Changed prefix to `{pre} `', color = random.choice(random_colors))
     await ctx.send(embed = embed)
 
     with open(r"prefixes.json", 'w') as f:
@@ -783,7 +783,7 @@ async def setprefix(ctx, *, pre):
     with open(r"prefixes.json", 'w') as f:
       json.dump(prefixes, f, indent = 4)
   else:
-    await ctx.send('dos that look like an option')
+    await ctx.send('not an option; rerun the command')
 
 
 @bot.command(aliases = ['rp'])
@@ -798,7 +798,6 @@ async def resetprefix(ctx):
 
   with open(r"prefixes.json", 'w') as f:
     json.dump(prefixes, f, indent = 4)
-
 
 #=============================================================================================================
 # SELL
@@ -943,6 +942,151 @@ async def buy(ctx):
     await ctx.send('Proper Usage: `buy [item] [amount]`')
   elif ctx.invoked_subcommand is None:
     await ctx.send(f"that doesn't exist buddy")
+
+@buy.command(name = 'morris')
+async def morris_subcommand(ctx, amount: int = None):
+  global balances, meats, salads, wheats, morris
+  user = str(ctx.message.author.id)
+  morris[user] = morris[user] if user in morris else 0
+  meats[user] = meats[user] if user in meats else 0
+  balances[user] = balances[user] if user in balances else 0
+  wheats[user] = wheats[user] if user in wheats else 0
+  salads[user] = salads[user] if user in salads else 0
+
+  if amount is None:
+    amount = 1
+  
+  if amount <= 0:
+    await ctx.send("rerun the command with a value above 0")
+    return
+  
+  if user in balances:
+    if balances[user] >= 10000:
+      if meats[user] >= 1500:
+        if salads[user] >= 3 :
+          if wheats[user] >= 5000:
+            wheats[user] -= 5000
+            salads[user] -= 3
+            meats[user] -= 1500
+            balances[user] -= 10000
+            morris[user] += 1
+            await ctx.send(f'Congratulations {ctx.message.author.mention}! You have bought a Morris X8200 jet!')
+          else: 
+            await ctx.send('You don\'t have enough wheat for this!')
+        else:
+          await ctx.send('You don\'t have enough salads for this!')
+      else:
+        await ctx.send('You don\'t have enough meat for this!')
+    else:
+      await ctx.send('You don\'t have enough money for this!')
+  else:
+    print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
+    balances[user] = START_BAL 
+    await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with {START_BAL} coins') 
+
+  print(f'In sell(): Saving meats = {morris}')
+  try: 
+    with open(MORRIS_FILE, 'w') as fp: 
+      json.dump(morris, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {MORRIS_FILE} not found! Not sure what to do here!') 
+
+  print(f'In sell(): Saving meats = {meats}')
+  try: 
+    with open(MEAT_FILE, 'w') as fp: 
+      json.dump(meats, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {MEAT_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving wheat = {wheats}')
+  try: 
+    with open(WHEAT_FILE, 'w') as fp: 
+      json.dump(wheats, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {WHEAT_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving salads = {salads}')
+  try: 
+    with open(SALADS_FILE, 'w') as fp: 
+      json.dump(salads, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {SALADS_FILE} not found! Not sure what to do here!') 
+
+@buy.command(name = 'douglas')
+async def douglas_subcommand(ctx, amount: int = None):
+  global balances, meats, salads, stoves, douglas
+  user = str(ctx.message.author.id)
+  douglas[user] = douglas[user] if user in douglas else 0
+  stoves[user] = stoves[user] if user in stoves else 0
+  meats[user] = meats[user] if user in meats else 0
+  balances[user] = balances[user] if user in balances else 0
+  salads[user] = salads[user] if user in salads else 0
+
+  if user in balances:
+    if balances[user] >= 75000:
+      if meats[user] >= 5000:
+        if salads[user] >= 20:
+          if stoves[user] >= 10:
+            meats[user] -= 5000
+            salads[user] -= 20
+            stoves[user] -= 10
+            balances[user] -= 75000
+            douglas[user] += 1
+            await ctx.send(f'Congratulations {ctx.message.author.mention}! You just cought a Douglas 900ER jet!')
+          else:
+            await ctx.send('You don\'t have enough stoves for this!')
+        else:
+          await ctx.send('You don\'t have enough salads for this!')
+      else:
+        await ctx.send('You don\'t have enough meat for this!')
+    else:
+      await ctx.send('You don\'t have enough money for this!')
+  else:
+    print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
+    balances[user] = START_BAL 
+    await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with {START_BAL} coins') 
+
+  print(f'In sell(): Saving meats = {meats}')
+  try: 
+    with open(MEAT_FILE, 'w') as fp: 
+      json.dump(meats, fp) 
+  except FileNotFoundError: 
+    print(f'In sell(): File {MEAT_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving salads = {salads}')
+  try: 
+    with open(SALADS_FILE, 'w') as fp: 
+      json.dump(salads, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {SALADS_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving stoves = {stoves}')
+  try: 
+    with open(STOVES_FILE, 'w') as fp: 
+      json.dump(stoves, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {STOVES_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving meats = {douglas}')
+  try: 
+    with open(DOUGLAS_FILE, 'w') as fp: 
+      json.dump(douglas, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {DOUGLAS_FILE} not found! Not sure what to do here!') 
 
 @buy.command(name = 'sheep', aliases = ['sheeps'])
 async def sheep_subcommand(ctx, amount: int = None):
@@ -1362,6 +1506,46 @@ async def pc_subcommand(ctx, amount: int = None):
   except FileNotFoundError: 
     print(f'In buy(): File {BALANCES_FILE} not found! Not sure what to do here!')
 
+@buy.command(name = 'mooshroom', aliases = ['mooshrooms'])
+async def mooshroom_subcommand(ctx, amount: int = None):
+  global balances, mooshroom_cows
+  user = str(ctx.message.author.id)
+  balances[user] = balances[user] if user in balances else 0
+  mooshroom_cows[user] = mooshroom_cows[user] if user in mooshroom_cows else 0
+
+  if amount is None:
+    amount = 1
+
+  if amount <= 0:
+    await ctx.send("rerun the command with a value above 0")
+    return
+  
+  if user in balances:
+    price_for_mcow = 14400 * amount
+    if balances[user] > price_for_mcow or balances[user] == price_for_mcow:
+      mooshroom_cows[user] += amount
+      balances[user] -= price_for_mcow
+      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** mooshroom cows for `{price_for_mcow} coins`', color = random.choice(random_colors))
+      await ctx.send(embed = embed)
+    else:
+      await ctx.send('too broke')
+  else:
+    await ctx.send('you have no money at all')
+
+  print(f'In buy(): Saving balances = {balances}')
+  try: 
+    with open(BALANCES_FILE, 'w') as fp: 
+      json.dump(balances, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+
+  print(f'In buy(): Saving mooshroom_cows = {mooshroom_cows}')
+  try: 
+    with open(MOOSHROOM_COW_FILE, 'w') as fp: 
+      json.dump(mooshroom_cows, fp) 
+  except FileNotFoundError: 
+    print(f'In buy(): File {MOOSHROOM_COW_FILE} not found! Not sure what to do here!')
+
 #=============================================================================================================
 
 
@@ -1384,7 +1568,7 @@ async def help(ctx):
 
   embed.add_field(name = ':hammer: Moderation', value = f"`{x}help moderation`", inline = False)
 
-  embed.add_field(name = ':money_with_wings: Currency', value = f"`{x}help currency`", inline = False)
+  embed.add_field(name = ':money_with_wings: Economy', value = f"`{x}help economy`", inline = False)
 
   embed.add_field(name = ':alien: Other', value = f"`{x}help other`", inline = False)
 
@@ -1397,15 +1581,15 @@ async def help(ctx):
   await ctx.send(embed = embed)
 
 
-@help.command(name = 'currency')
-async def currency_subcommand(ctx):
+@help.command(name = 'economy')
+async def economy_subcommand(ctx):
 
   with open(r"prefixes.json", 'r') as f:
     prefixes = json.load(f)
   
   x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
 
-  embed = discord.Embed(title = ":money_with_wings: Currency Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`, `give`', color = random.choice(random_colors))
+  embed = discord.Embed(title = ":money_with_wings: Economy Commands", description = '`plead`, `bal`, `buy`, `sell`, `notebook`, `combine`, `pharmacy`, `rice`, `sheep`, `buffalo`, `pig`, `farm`, `cook`, `shop`, `popeyes`, `grab`, `use`, `health`, `jetshop`, `fly`, `get`, `city`, `upgrade`, `requirements`, `create`, `work`, `purchase`, `cowmarket`, `twitch`, `profile`, `give`', color = random.choice(random_colors))
   embed.set_footer(text = f'use `{x}` before each command!')
   await ctx.send(embed = embed)
 
@@ -1555,11 +1739,22 @@ async def setchannelid(ctx, id: int):
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
   channel_id[server] = channel_id[server] if server in channel_id else 0
   
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  
+
+  if len(str(id)) != 19:
+    await ctx.send('that isn\'t a valid channel id')
+    return
+    
   if allowmembermessage[server] == 1:  
     channel_id[server] = id
     await ctx.send(f'set channel id as: `{id}`')
   else:
-    await ctx.send('if you don\'t have member joining message allowed, how tf u gonna set channel id?\nallow it using `le membermessage`')
+    await ctx.send(f'i can\'t do that without the member joining message function enabled buddy\nenable it by using `{x}membermessage`')
 
   print(f'In beg(): Saving balances = {channel_id}')
   try: 
@@ -1591,10 +1786,14 @@ async def reactionmessage(ctx):
 @bot.command(pass_context=True)
 async def automemez(ctx, timeout: float):
   global autoMeme
-  autoMeme = True
-  while autoMeme == True:
-    await meme(ctx)
-    await asyncio.sleep(timeout)
+  if timeout > 3:
+    autoMeme = True
+    await ctx.send(f'i will send reddit memes every {timeout} seconds, to stop this, use the command `stopmemez`')
+    while autoMeme == True:
+      await meme(ctx)
+      await asyncio.sleep(timeout)
+  else:
+    await ctx.send('rerun the command with a time value higher than `3` seconds')
 
 @bot.command()
 async def stopmemez(ctx):
@@ -1637,7 +1836,7 @@ async def guess(ctx):
   msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author, timeout = 6.0)
 
   if msg.content.startswith(f'{answer}'):
-    await ctx.send('correct, noice')
+    await ctx.send('correct')
   else:
     await ctx.send(f'wrong, it was **{answer}**')
 
@@ -1645,7 +1844,7 @@ async def guess(ctx):
 
 #------------------------
 #------------------------
-#CURRENCY COMMANDS
+#ECONOMY COMMANDS
 #------------------------
 #------------------------
 
@@ -1658,42 +1857,6 @@ async def cowmarket(ctx):
   embed = discord.Embed(title = 'Cow Market', description = f'{x}purchase [ex: mooshroom]\n{x}stew [ex: mooshroom]', color = random.choice(random_colors))
   embed.add_field(name = 'Basic Cows', value = '<:mooshroom:716492779391418440> **Mooshroom Cow**\n- Gives 15 ***mushroom stew*** every farm\n- Price: __14400__ coins\n- Can only be used 15 times, then it dies')
   await ctx.send(embed = embed)
-
-@bot.command()
-async def purchase(ctx, arg, amount : int):
-  global balances, mooshroom_cows
-  user = str(ctx.message.author.id)
-  balances[user] = balances[user] if user in balances else 0
-  mooshroom_cows[user] = mooshroom_cows[user] if user in mooshroom_cows else 0
-
-  if arg == 'mooshroom' or arg == 'Mooshroom':
-    if balances[user] == 14400 or balances[user] > 14400:
-      price_for_mcow = 14400 * amount
-      if balances[user] > price_for_mcow or balances[user] == price_for_mcow:
-        mooshroom_cows[user] += amount
-        balances[user] -= price_for_mcow
-        embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** mooshroom cows for `{price_for_mcow} coins`', color = random.choice(random_colors))
-        await ctx.send(embed = embed)
-      else:
-        await ctx.send('u don\'t got the money man')
-    else:
-      await ctx.send('u don\'t got the money man')
-  else:
-    await ctx.send('not an option  :l')
-
-  print(f'In beg(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In beg(): Saving balances = {mooshroom_cows}')
-  try: 
-    with open(MOOSHROOM_COW_FILE, 'w') as fp: 
-      json.dump(mooshroom_cows, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {MOOSHROOM_COW_FILE} not found! Not sure what to do here!') 
 
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
@@ -1907,14 +2070,16 @@ async def youtube(ctx, *, search):
   search_results = re.findall('href=\"\\/watch\\?v=(.{11})', htm_content.read().decode())
   await ctx.send('http://www.youtube.com/watch?v=' + search_results[0])
 
-
-@bot.group(invoke_without_command = True, pass_context = True)
+@bot.group(pass_context = True)
 async def upgrade(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `upgrade [key/shop/power/water/waste/fire/police/health/entertainment/parks]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"that doesn't exist buddy")
+
+@upgrade.command()
+async def key(ctx):
   await ctx.send('__**Upgrading in your city**__\n\t- First, spend your money on the URGENT needs for the city such as: Fire, Health, and Police\n\t- Boost population by upgrading Parks and Entertainment\n\t- The more population you get, the more revenue you get!\n\t- Find the requirements to get medium and advanced city with `le requirements [advanced city/medium city]`\n\t- Do `le collect [fire/health/police/entertainment/park]`\n\t- Do `le upgrade [section of city]` to upgrade the section\'s levels for revenue!')
-
-
-
-
 
 @upgrade.command()
 async def shop(ctx):
@@ -2660,26 +2825,33 @@ async def entertainment(ctx):
   except FileNotFoundError: 
     print(f'In sell(): File {CITYPOP_FILE} not found! Not sure what to do here!') 
 
+#=============================================================================================================
+# REQUIREMENTS
+
+@bot.group(pass_context = True)
+async def requirements(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `requirements [medium/advanced]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"that type of city doesn't exist buddy")
+
+@requirements.command(name = 'medium')
+async def medium_subcommand(ctx):
+  await ctx.send('__**Requirements for Medium City**__\n\t- LVL 3 Entertainment\n\t- LVL 5 Parks\n\t- LVL 2 Health\n\t- LVL 2 Fire\n\t- LVL 2 Police\n\t- LVL 3 Waste\n\t- LVL 5 Water\n\t- LVL 4 Power')
+
+@requirements.command(name = 'advanced')
+async def advanced_subcommand(ctx):
+  await ctx.send('__**Requirements for Advanced City**__\n\t- LVL 7 Entertainment\n\t- LVL 6 Parks\n\t- LVL 4 Health\n\t- LVL 4 Fire\n\t- LVL 4 Police\n\t- LVL 5 Waste\n\t- LVL 8 Water\n\t- LVL 5 Power')
+
+#=============================================================================================================
 
 
-
-
-@bot.command()
-async def requirements(ctx, *, message: str):
-  if message == 'medium city' or message == 'Medium city' or message == 'medium City' or message == 'Medium City':
-    await ctx.send('__**Requirements for Medium City**__\n\t- LVL 3 Entertainment\n\t- LVL 5 Parks\n\t- LVL 2 Health\n\t- LVL 2 Fire\n\t- LVL 2 Police\n\t- LVL 3 Waste\n\t- LVL 5 Water\n\t- LVL 4 Power\nbtw you have to have all at the requirements or between medium and advanced')
-  elif message == 'advanced city' or message == 'Advanced city' or message == 'advanced City' or message == 'Advanced City':
-    await ctx.send('__**Requirements for Advanced City**__\n\t- LVL 7 Entertainment\n\t- LVL 6 Parks\n\t- LVL 4 Health\n\t- LVL 4 Fire\n\t- LVL 4 Police\n\t- LVL 5 Waste\n\t- LVL 8 Water\n\t- LVL 5 Power\nbtw you have to have all at the requirements or between medium and advanced')
-  else:
-    await ctx.send('not an option ')
-
-
-
-
-
-@bot.group(invoke_without_command = True, pass_context = True)
+@bot.group(pass_context = True)
 async def collect(ctx):
-  await ctx.send('Proper Usage: `le collect [section]`')
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `collect [power/water/waste/fire/police/health/entertainment/health]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"that section doesn't exist buddy")
 
 @collect.command()
 @commands.cooldown(1, 86400, commands.BucketType.user)
@@ -3684,226 +3856,155 @@ async def jetshop(ctx):
   x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
   morris[user] = morris[user] if user in morris else 0
   douglas[user] = douglas[user] if user in douglas else 0
-  embed = discord.Embed(title = 'Jet shop', description = f'`{x}get [Morris/Douglas]` or `{x}fly [Morris/Douglas]`', color = random.choice(random_colors))
+  embed = discord.Embed(title = 'Jet shop', description = f'`{x}buy [Morris/Douglas]` or `{x}fly [Morris/Douglas]`', color = random.choice(random_colors))
   embed.add_field(name = ':airplane_small: Morris X8200', value = 'small but fiesty jet, 25% chance of getting air sickness\n`Price: 1500 Meat, 3 Salads, 5000 wheat, 10000 coins`', inline = True)
   embed.add_field(name = ':airplane: Douglas 900ER', value = 'Wanna travel far without problems, here\'s your answer!\n`Price: 5000 Meat, 20 Salads, 10 Stoves, 75000 coins`', inline = False)
   await ctx.send(embed = embed)
 
 
-
-
-
-@bot.command()
-async def get(ctx, arg1):
-  global balances, meats, salads, wheats, stoves
-  user = str(ctx.message.author.id)
-  morris[user] = morris[user] if user in morris else 0
-  douglas[user] = douglas[user] if user in douglas else 0
-  stoves[user] = stoves[user] if user in stoves else 0
-  meats[user] = meats[user] if user in meats else 0
-  balances[user] = balances[user] if user in balances else 0
-  wheats[user] = wheats[user] if user in wheats else 0
-  salads[user] = salads[user] if user in salads else 0
-  if arg1 == "Morris" or arg1 == "morris":
-    if balances[user] == 10000 or balances[user] > 10000:
-      if meats[user] == 1500 or meats[user] > 1500:
-        if salads[user] == 3 or salads[user] > 3:
-          if wheats[user] == 5000 or wheats[user] > 5000:
-            wheats[user] -= 5000
-            salads[user] -= 3
-            meats[user] -= 1500
-            balances[user] -= 10000
-            morris[user] += 1
-            await ctx.send(f'Congratulations {ctx.message.author.mention}! You have bought a Morris X8200 jet!')
-          else: 
-            await ctx.send('You don\'t have enough wheat for this!')
-        else:
-          await ctx.send('You don\'t have enough salads for this!')
-      else:
-        await ctx.send('You don\'t have enough meat for this!')
-    else:
-      await ctx.send('You don\'t have enough money for this!')
-  elif arg1 == "Douglas" or arg1 == "douglas":
-    if balances[user] == 75000 or balances[user] > 75000:
-      if meats[user] == 5000 or meats[user] > 5000:
-        if salads[user] == 20 or salads[user] > 20:
-          if stoves[user] == 10 or stoves[user] > 10:
-            meats[user] -= 5000
-            salads[user] -= 20
-            stoves[user] -= 10
-            balances[user] -= 75000
-            douglas[user] += 1
-            await ctx.send(f'Congratulations {ctx.message.author.mention}! You just cought a Douglas 900ER jet!')
-          else:
-            await ctx.send('You don\'t have enough stoves for this!')
-        else:
-          await ctx.send('You don\'t have enough salads for this!')
-      else:
-        await ctx.send('You don\'t have enough meat for this!')
-    else:
-      await ctx.send('You don\'t have enough money for this!')
-  else: 
-    await ctx.send('error occured')
-    
-  print(f'In beg(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In buy(): Saving stoves = {stoves}')
-  try: 
-    with open(STOVES_FILE, 'w') as fp: 
-      json.dump(stoves, fp) 
-  except FileNotFoundError: 
-    print(f'In pigs(): File {STOVES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving meats = {meats}')
-  try: 
-    with open(MEAT_FILE, 'w') as fp: 
-      json.dump(meats, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {MEAT_FILE} not found! Not sure what to do here!') 
-  
-  print(f'In sell(): Saving meats = {morris}')
-  try: 
-    with open(MORRIS_FILE, 'w') as fp: 
-      json.dump(morris, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {MORRIS_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving meats = {douglas}')
-  try: 
-    with open(DOUGLAS_FILE, 'w') as fp: 
-      json.dump(douglas, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {DOUGLAS_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving wheat = {wheats}')
-  try: 
-    with open(WHEAT_FILE, 'w') as fp: 
-      json.dump(wheats, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {WHEAT_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving salads = {salads}')
-  try: 
-    with open(SALADS_FILE, 'w') as fp: 
-      json.dump(salads, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {SALADS_FILE} not found! Not sure what to do here!') 
+#=============================================================================================================
+# FLY
 
 # 0 IS CALIFORNIA
 # 1 IS TEXAS
 
-@bot.command()
-async def fly(ctx, arg1):
-  global morris, douglas, locations, healths
+@bot.group(pass_context = True)
+async def fly(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `fly [morris/douglas]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"that plane doesn't exist buddy")
+
+@fly.command(name = 'morris')
+async def morris_flysubcommand(ctx):
+  global morris, locations, healths
   user = str(ctx.message.author.id)
   locations[user] = locations[user] if user in locations else 0
   morris[user] = morris[user] if user in morris else 0
-  douglas[user] = douglas[user] if user in douglas else 0
-  if arg1 == "morris" or arg1 == "Morris":
-    if morris[user] == 1 or morris[user] > 1:
-      await ctx.send('You have a 25% chance of getting air sick,causing you to lose about 5-9 health.\nStill wanna fly on this plane? `y` or `n`')
-      msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-      if msg.content.lower() == 'y':
-        await ctx.send('Where do you want to travel? `Texas` or `California`?')
-        msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-        if msg.content.lower() == 'California' or msg.content.lower() == 'california':
-          if locations[user] == 0:
-            await ctx.send('how do you expect to travel to California if ur already here')
-          elif locations[user] == 1:
-            CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
-            HEALTH_LOSS = random.randint(5, 9)
-            msg_prefix = 'Travelling back to California' 
-            msg_str = msg_prefix + '.' 
-            msg = await ctx.send(msg_str)
-            for i in range(FLY_DELAY_ITER): 
-              await asyncio.sleep(FLY_DELAY_SEC)
-              msg_str = msg_str + '.' 
-              await msg.edit(content = msg_str)
-            if CHANCE_OF_GETTING_AIR_SICK < 25 or CHANCE_OF_GETTING_AIR_SICK == 25:
-              healths[user] -= HEALTH_LOSS
-              await ctx.send(f'welp you got air sick, causing you to lose {HEALTH_LOSS} health')
-            locations[user] = 0
-            await ctx.send('You are in California now! Things to do are `le farm`')
-          else:
-            await ctx.send('Error Occured')
-        elif msg.content.lower == "Texas" or msg.content.lower() == 'texas':
-          if locations[user] == 1:
-            await ctx.send('how do you expect to travel to Texas if ur already here')
-          elif locations[user] == 0:
-            CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
-            HEALTH_LOSS = random.randint(5, 9)
-            if CHANCE_OF_GETTING_AIR_SICK > 25:
-              await ctx.send('Travelling to Texas!')
-              await ctx.send(f'welp you got air sick, causing you to lose {HEALTH_LOSS} health')
-              healths[user] -= HEALTH_LOSS
-              locations[user] = 1
-              await asyncio.sleep(1.5)
-              await ctx.send('You are in Texas now! Things to do are `le city`')
-            else:
-              await ctx.send('Travelling to Texas!')
-              locations[user] = 1
-              await asyncio.sleep(1.5)
-              await ctx.send('You are in Texas now! Things to do are `le city`')
-          else:
-            await ctx.send('Error Occured')
-        else:
-          await ctx.send('does that look like an option ')
-      elif msg.content.lower() == 'n':
-        await ctx.send('yeeting off this plane')
-    else:
-      await ctx.send('You don\'t have the Morris jet!')
-  elif arg1 == "Douglas" or arg1 == "douglas":
-    if douglas[user] == 1 or douglas[user] > 1:
+  healths[user] = healths[user] if user in healths else 0
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  if morris[user] >= 1:
+    await ctx.send('You have a 25% chance of getting air sick, causing you to lose about 5-9 health.\nStill want to fly on this plane? `y` or `n`')
+    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+    if msg.content.lower() == 'y':
+      if healths[user] < 9:
+        await ctx.send('you do not have enough health to risk this flight')
+        return
       await ctx.send('Where do you want to travel? `Texas` or `California`?')
       msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
-      if msg.content.lower() == 'California' or msg.content.lower() == 'california':
+      if msg.content.lower() == 'california':
         if locations[user] == 0:
-          await ctx.send('how do you expect to travel to California if ur already here')
+          await ctx.send('you are already in california')
+          return
         elif locations[user] == 1:
-            await ctx.send('Travelling back to california!')
+          CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
+          HEALTH_LOSS = random.randint(5, 9)
+          await ctx.send('travelling back to California!')
+          if CHANCE_OF_GETTING_AIR_SICK <= 25:
+            healths[user] -= HEALTH_LOSS
+            await ctx.send(f'welp you got air sick, causing you to lose {HEALTH_LOSS} health')
             locations[user] = 0
-            await asyncio.sleep(1.5)
-            await ctx.send('You are in California now! Things to do are `le farm California`')
+            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+          else:
+            locations[user] = 0
+            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
         else:
-          await ctx.send('Error Occured')
-      elif msg.content.lower == "Texas" or msg.content.lower() == 'texas':
+          await ctx.send('you don\'t have a location value')
+      elif msg.content.lower() == 'texas':
         if locations[user] == 1:
-          await ctx.send('how do you expect to travel to Texas if ur already here')
+          await ctx.send('you are already in Texas')
+          return
         elif locations[user] == 0:
-            await ctx.send('Travelling to Texas!')
+          CHANCE_OF_GETTING_AIR_SICK = random.randint(1, 100)
+          HEALTH_LOSS = random.randint(5, 9)
+          await ctx.send('Travelling to Texas!')
+          if CHANCE_OF_GETTING_AIR_SICK > 25:
+            await ctx.send(f'you got air sick, causing you to lose {HEALTH_LOSS} health')
+            healths[user] -= HEALTH_LOSS
             locations[user] = 1
             await asyncio.sleep(1.5)
-            await ctx.send('You are in Texas now! Things to do are `le city`')
+            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+          else:
+            locations[user] = 1
+            await asyncio.sleep(1.5)
+            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
         else:
-          await ctx.send('Error Occured')
+          await ctx.send('you don\'t have a location value')
       else:
-        await ctx.send('does that look like an option ')
-    else:
-      await ctx.send('You don\'t have the Douglas jet!')
+        await ctx.send('not an option; rerun the command')
+    elif msg.content.lower() == 'n':
+      await ctx.send('alright, flight cancelled')
   else:
-    await ctx.send('error occured')
-          
-  print(f'In beg(): Saving balances = {locations}')
+    await ctx.send('You don\'t have the Morris jet!')
+
+  print(f'In fly(): Saving locations = {locations}')
   try: 
     with open(LOCATIONS_FILE, 'w') as fp: 
       json.dump(locations, fp) 
   except FileNotFoundError: 
-    print(f'In balances(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
+    print(f'In fly(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
 
-  print(f'In beg(): Saving balances = {healths}')
+  print(f'In fly(): Saving healths = {healths}')
   try: 
     with open(HEALTH_FILE, 'w') as fp: 
       json.dump(healths, fp) 
   except FileNotFoundError: 
-    print(f'In balances(): File {HEALTH_FILE} not found! Not sure what to do here!') 
+    print(f'In fly(): File {HEALTH_FILE} not found! Not sure what to do here!') 
+
+@fly.command(name = 'douglas')
+async def douglas_flysubcommand(ctx):
+  global douglas, locations
+  user = str(ctx.message.author.id)
+  locations[user] = locations[user] if user in locations else 0
+  douglas[user] = douglas[user] if user in douglas else 0
+
+  with open(r"prefixes.json", 'r') as f:
+    prefixes = json.load(f)
+
+  x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
+
+  if douglas[user] >= 1:
+    await ctx.send('Where do you want to travel? `Texas` or `California`?')
+    msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
+    if msg.content.lower() == 'california':
+      if locations[user] == 0:
+        await ctx.send('you are already in California')
+      elif locations[user] == 1:
+          await ctx.send('Travelling back to california!')
+          locations[user] = 0
+          await asyncio.sleep(1.5)
+          await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+      else:
+        await ctx.send('you don\'t have a location value')
+    elif msg.content.lower() == 'texas':
+      if locations[user] == 1:
+        await ctx.send('you are already in Texas')
+      elif locations[user] == 0:
+          await ctx.send('Travelling to Texas!')
+          locations[user] = 1
+          await asyncio.sleep(1.5)
+          await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+      else:
+        await ctx.send('you don\'t have a location value')
+    else:
+      await ctx.send('not an option; rerun the command')
+  else:
+    await ctx.send('You don\'t have the Douglas jet!')
+
+  print(f'In fly(): Saving locations = {locations}')
+  try: 
+    with open(LOCATIONS_FILE, 'w') as fp: 
+      json.dump(locations, fp) 
+  except FileNotFoundError: 
+    print(f'In fly(): File {LOCATIONS_FILE} not found! Not sure what to do here!') 
 
 
-
+#=============================================================================================================
 
 
 @bot.command()
@@ -4022,9 +4123,9 @@ async def leaderboard(ctx):
         third_balance = balance
 
     embed = discord.Embed(title = f"{ctx.guild.name}'s Money Leaderboard", color = random.choice(random_colors))
-    embed.add_field(name = f":first_place: `{first_balance}` - {first_place}", value = f'', inline = False)
-    embed.add_field(name = f":second_place: `{second_balance}` - {second_place}", value = f"", inline = False)
-    embed.add_field(name = f":third_place: `{third_balance}` - {third_place}", value = f'', inline = False)
+    embed.add_field(name = f":first_place: `{first_balance:,d}` - {first_place}", value = f'', inline = False)
+    embed.add_field(name = f":second_place: `{second_balance:,d}` - {second_place}", value = f"", inline = False)
+    embed.add_field(name = f":third_place: `{third_balance:,d}` - {third_place}", value = f'', inline = False)
 
     await ctx.send(embed = embed)
   elif msg.content.lower() == 'global':   
@@ -4046,9 +4147,9 @@ async def leaderboard(ctx):
         third_balance = balance
 
     embed = discord.Embed(title = "Global Money Leaderboard", color = random.choice(random_colors))
-    embed.add_field(name = f":first_place: `{first_balance}` - {first_place}", value = f'', inline = False)
-    embed.add_field(name = f":second_place: `{second_balance}` - {second_place}", value = f"", inline = False)
-    embed.add_field(name = f":third_place: `{third_balance}` - {third_place}", value = f'', inline = False)
+    embed.add_field(name = f":first_place: `{first_balance:,d}` - {first_place}", value = f'', inline = False)
+    embed.add_field(name = f":second_place: `{second_balance:,d}` - {second_place}", value = f"", inline = False)
+    embed.add_field(name = f":third_place: `{third_balance:,d}` - {third_place}", value = f'', inline = False)
 
     await ctx.send(embed = embed)
   else:
@@ -4234,24 +4335,10 @@ async def pig_error(ctx, error):
     m, s = divmod(error.retry_after, 60)
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to get more goods  ')
 
-@fly.error
-async def fly_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `fly [morris/douglas]`')
-
 @automemez.error
 async def am_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
-    global autoMeme
-    autoMeme = True
-    while autoMeme == True:
-      await meme(ctx)
-      await asyncio.sleep(5)
-
-@purchase.error
-async def purchase_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `purchase [ex: mooshroom] [amount]`')
+    await ctx.send('specify a delay between each meme sent, lower bound is `3` seconds')
 
 @profile.error
 async def profile_error(ctx, error):
@@ -4293,20 +4380,10 @@ async def setprefix_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `setprefix [prefix]`')
 
-@get.error
-async def get_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `get [morris/douglas]`')
-
 @combine.error
 async def combine_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `combine [chicken] [rice]` See the command `notebook` for amounts of the recipe')
-
-@requirements.error
-async def requirements_error(ctx, error):
-  if isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `requirements [medium city/advanced city]`')
     
 @buffalo.error
 async def buffalo_error(ctx, error):
