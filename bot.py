@@ -665,15 +665,12 @@ async def setbank(ctx, member: discord.Member, amount: int):
       balances[member2] = amount
       await ctx.send(f'they didnt have a bank account, they do now with {amount} coins')
 
-  else:
-    await ctx.send('only the **OWNER** of this bot can use this ')
-
-  print(f'In beg(): Saving balances = {balances}')
+  print(f'In setbank(): Saving balances = {balances}')
   try: 
     with open(BALANCES_FILE, 'w') as fp: 
       json.dump(balances, fp) 
   except FileNotFoundError: 
-    print(f'In balances(): File {BALANCES_FILE} not found! Not sure what to do here!') 
+    print(f'In setbank(): File {BALANCES_FILE} not found! Not sure what to do here!') 
 
 #============================================================================
 
@@ -1213,6 +1210,72 @@ async def bread_subcommand(ctx):
 #=============================================================================================================
 
 #=============================================================================================================
+# COOK
+
+@bot.group(pass_context = True)
+async def cook(ctx):
+  if ctx.subcommand_passed is None:
+    await ctx.send('Proper Usage: `cook [item]`')
+  elif ctx.invoked_subcommand is None:
+    await ctx.send(f"you can only cook **chicken**")
+
+@cook.command(name = 'chicken', aliases = ['chickens'])
+@commands.cooldown(1, 1800, commands.BucketType.user)
+async def chicken_subcommand_cook(ctx):
+  global uncooked_chickens, cooked_chickens, stoves, healths
+  user = str(ctx.message.author.id)
+  healths[user] = healths[user] if user in healths else 100
+  stoves[user] = stoves[user] if user in stoves else 0
+  cooked_chickens[user] = cooked_chickens[user] if user in cooked_chickens else 0
+  uncooked_chickens[user] = uncooked_chickens[user] if user in uncooked_chickens else 0 
+
+  if healths[user] >= 10:
+    if stoves[user] > 0:
+      if uncooked_chickens[user] > 0:
+        chicken = uncooked_chickens[user] * 3
+        cooked_chickens[user] += chicken
+        healths[user] -= 10
+        stoves[user] -= 1
+        embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :chicken: {chicken} chickens from his :hatched_chick: Uncooked Chickens!", color = random.choice(random_colors))
+        await ctx.send(embed = embed)   
+      else:
+        await ctx.send('You don\'t have any uncooked chicken!')  
+    else:
+      await ctx.send('You don\'t have any stoves!')
+  else:
+    await ctx.send('You don\'t have enough health for this action!')
+
+  print(f'In cook(): Saving healths = {healths}')
+  try: 
+    with open(HEALTH_FILE, 'w') as fp: 
+      json.dump(healths, fp) 
+  except FileNotFoundError: 
+    print(f'In cook(): File {HEALTH_FILE} not found! Not sure what to do here!') 
+
+  print(f'In cook(): Saving stoves = {stoves}')
+  try: 
+    with open(STOVES_FILE, 'w') as fp: 
+      json.dump(stoves, fp) 
+  except FileNotFoundError: 
+    print(f'In cook(): File {STOVES_FILE} not found! Not sure what to do here!') 
+
+  print(f'In cook(): Saving uncooked chickens = {uncooked_chickens}')
+  try: 
+    with open(UNCOOKED_CHICKENS_FILE, 'w') as fp: 
+      json.dump(uncooked_chickens, fp) 
+  except FileNotFoundError: 
+    print(f'In cook(): File {UNCOOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
+
+  print(f'In cook(): Saving cooked chickens = {cooked_chickens}')
+  try: 
+    with open(COOKED_CHICKENS_FILE, 'w') as fp: 
+      json.dump(cooked_chickens, fp) 
+  except FileNotFoundError: 
+    print(f'In cook(): File {COOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
+
+#=============================================================================================================
+
+#=============================================================================================================
 # SELL
 
 @bot.group(pass_context = True)
@@ -1496,7 +1559,7 @@ async def buy(ctx):
   if ctx.subcommand_passed is None:
     await ctx.send('Proper Usage: `buy [item] [amount]`')
   elif ctx.invoked_subcommand is None:
-    await ctx.send(f"that doesn't exist buddy")
+    await ctx.send(f"that doesn't exist buddy, try using all lowercase letters")
 
 @buy.command(name = 'morris')
 async def morris_subcommand(ctx, amount: int = None):
@@ -3896,62 +3959,6 @@ async def buffalo(ctx):
 
 @bot.command()
 @commands.cooldown(1, 1800, commands.BucketType.user)
-async def cook(ctx, arg):
-  global uncooked_chickens, cooked_chickens, stoves, healths
-  user = str(ctx.message.author.id)
-  healths[user] = healths[user] if user in healths else 100
-  stoves[user] = stoves[user] if user in stoves else 0
-  cooked_chickens[user] = cooked_chickens[user] if user in cooked_chickens else 0
-  uncooked_chickens[user] = uncooked_chickens[user] if user in uncooked_chickens else 0 
-  if arg == "chicken" or arg == "chickens":
-    if healths[user] > 10 or healths[user] == 10:
-      if stoves[user] > 0:
-        if user in uncooked_chickens:
-          chicken = uncooked_chickens[user] * 3
-          cooked_chickens[user] += chicken
-          healths[user] -= 10
-          stoves[user] -= 1
-          embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :chicken: {chicken} chickens from his :hatched_chick: Uncooked Chickens!", color = random.choice(random_colors))
-          await ctx.send(embed = embed)   
-        else:
-          await ctx.send('You don\'t have any uncooked chickens!')  
-      else:
-        await ctx.send('You don\'t have any stoves!')
-    else:
-      await ctx.send('You don\'t have enough health for this action!')
-  else:
-    await ctx.send('Specify what to cook!')
-
-  print(f'In pigs(): Saving healths = {healths}')
-  try: 
-    with open(HEALTH_FILE, 'w') as fp: 
-      json.dump(healths, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-  print(f'In pigs(): Saving stoves = {stoves}')
-  try: 
-    with open(STOVES_FILE, 'w') as fp: 
-      json.dump(stoves, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {STOVES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In pigs(): Saving uncooked chickens = {uncooked_chickens}')
-  try: 
-    with open(UNCOOKED_CHICKENS_FILE, 'w') as fp: 
-      json.dump(uncooked_chickens, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {UNCOOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
-
-  print(f'In pigs(): Saving cooked chickens = {cooked_chickens}')
-  try: 
-    with open(COOKED_CHICKENS_FILE, 'w') as fp: 
-      json.dump(cooked_chickens, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {COOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
-
-@bot.command()
-@commands.cooldown(1, 1800, commands.BucketType.user)
 async def pig(ctx):
   global pigs, meats, healths
   user = str(ctx.message.author.id)
@@ -4346,14 +4353,12 @@ async def grab_error(ctx, error):
     await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to grab another airdrop ')
     return
 
-@cook.error
-async def cook_error(ctx, error):
+@chicken_subcommand_cook.error
+async def chicken_subcommand_error(ctx, error):
   if isinstance(error, commands.CommandOnCooldown):
     m, s = divmod(error.retry_after, 60)
-    await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to cook again ')
-    return  
-  elif isinstance(error, commands.MissingRequiredArgument):
-    await ctx.send('Proper Usage: `cook [chicken]`')
+    await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to cook chicken again')
+    return
 
 @plead.error
 async def plead_error(ctx, error):
