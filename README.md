@@ -1,5 +1,5 @@
 # Mr Morale
-A general use discord bot with advanced moderation and text manipulation systems, coupled with a complex economic system users can navigate through with proper guidance.
+A general use discord bot with advanced moderation and text manipulation systems, coupled with a complex economic system users can navigate through with proper guidance.<br>
 The economy system ranges from simple bank functions to a user creating and managing their own city.   
 
 # Bot Invite
