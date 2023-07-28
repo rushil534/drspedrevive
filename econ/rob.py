@@ -81,6 +81,7 @@ class rob(commands.Cog):
             await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to rob again')
         if isinstance(error, commands.errors.MemberNotFound):
             await ctx.send('user isn\'t in the server')
+            self.rob.reset_cooldown(ctx)
 
 async def setup(bot):
     await bot.add_cog(rob(bot)) 
