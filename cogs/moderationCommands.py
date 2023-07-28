@@ -10,38 +10,48 @@ class moderationCommands(commands.Cog):
 	autoPurge = False
 
 	@commands.command(aliases = ['ui'])
-	async def userinfo(self, ctx, member: discord.Member):
+	async def userinfo(self, ctx, member: discord.Member = None):
+		if member is None:
+			member = ctx.message.author
+		
 		roles = [role for role in member.roles]
 
-		embed=discord.Embed(colour=member.color, timestamp=ctx.message.created_at)
+		embed = discord.Embed(colour = member.color, timestamp = ctx.message.created_at)
 
-		embed.set_author(name=f"User Info - {member}")
-		embed.set_thumbnail(url=member.avatar_url)
-		embed.set_footer(text=f"Requested by {ctx.author}", icon_url = ctx.author.avatar_url)
+		embed.set_author(name = f"User Info - {member}")
+		embed.set_thumbnail(url = member.avatar)
+		embed.set_footer(text = f"Requested by {ctx.author}", icon_url = ctx.author.avatar)
 
-		embed.add_field(name="ID:", value=member.id)
-		embed.add_field(name="Guild name:", value=member.display_name)
-		embed.add_field(name="Created at:", value=member.created_at.strftime("%a, %d %B %Y, %I:%M %p UTC"))
-		embed.add_field(name="Joined at:", value=member.joined_at.strftime("%a, %d %B %Y, %I:%M %p UTC"))
+		embed.add_field(name = "ID:", value = member.id)
+		embed.add_field(name = "Server name:", value = member.display_name)
+		embed.add_field(name = "Created at:", value = member.created_at.strftime("%a, %d %B %Y, %I:%M %p UTC"))
+		embed.add_field(name = "Joined at:", value = member.joined_at.strftime("%a, %d %B %Y, %I:%M %p UTC"))
 
-		embed.add_field(name=f"Roles ({len(roles)})", value=" ".join([role.mention for role in roles]))
-		embed.add_field(name="Top role:", value=member.top_role.mention)
+		embed.add_field(name = f"Roles ({len(roles)})", value = " ".join([role.mention for role in roles]))
+		embed.add_field(name = "Top role:", value = member.top_role.mention)
 
-		embed.add_field(name="Bot?", value=member.bot)
-		embed.add_field(name="Idiot?", value="True")
+		embed.add_field(name="Bot?", value = member.bot)
 
 		await ctx.send(embed=embed) 
 
+	@commands.command()
+	@has_permissions(manage_nicknames = True)
+	async def changenick(self, ctx, member: discord.Member, *, newnick: str):
+		await member.edit(nick = newnick)
+		await ctx.send(f'nickname of {member.mention} has been changed to {newnick}')
 
 	@commands.command()
 	@has_permissions(manage_channels = True)
 	async def autopurge(self, ctx, amount: int, seconds: float):
-		await ctx.send(f'`{amount}` messages will delete every `{seconds}` seconds\nTo stop this, do `le stoppurge`')
-		global autoPurge
-		autoPurge = True
-		while autoPurge == True:
-			await asyncio.sleep(seconds)
-			await ctx.channel.purge(limit = amount)
+		if seconds < 3:
+			await ctx.send('must be above 3 seconds for api reasons')
+		else:
+			await ctx.send(f'`{amount}` messages will delete every `{seconds}` seconds\nTo stop this, do `le stoppurge`')
+			global autoPurge
+			autoPurge = True
+			while autoPurge == True:
+				await asyncio.sleep(seconds)
+				await ctx.channel.purge(limit = amount)
 			
 	@commands.group(invoke_without_command = True)
 	async def new(self, ctx):
@@ -75,9 +85,8 @@ class moderationCommands(commands.Cog):
 	@delete.command() 
 	@commands.guild_only()
 	@has_permissions(manage_channels = True)
-	async def thechannel(self, ctx, channel: discord.TextChannel = None):
-		channel = channel or ctx.channel
-		await channel.delete()
+	async def thechannel(self, ctx, channel: discord.TextChannel):			
+		await channel.delete();
 		await ctx.send(f'Channel: `{channel.name}` deleted!')
 
 	@commands.command()
@@ -123,90 +132,103 @@ class moderationCommands(commands.Cog):
 		autoPurge = False
 		await ctx.send('done')
 
-
 	@commands.command()
 	@has_permissions(ban_members = True)
 	async def ban(self, ctx, member: discord.Member, *, reason=None):
 		server = ctx.message.guild
 		if member == ctx.message.author:
-				await ctx.send("are you **REALLY** going to try to ban **YOURSELF**")
-				return
+			await ctx.send("are you **REALLY** going to try to ban **YOURSELF**")
+			return
 		elif member == None:
-				await ctx.send('whatchu think ima do without a user to ban')
+			await ctx.send('whatchu think ima do without a user to ban')
 		elif reason == None:
-				reason = "No reason given"
-				await member.ban(reason=reason)
-				await ctx.send(f"```{member} was banned\nReason: {reason}```")
-				message = f"You were banned from {server}\nReason: {reason}"
-				await member.send(message)
+			reason = "No reason given"
+			await member.ban(reason=reason)
+			await ctx.send(f"```{member} was banned\nReason: {reason}```")
+			message = f"You were banned from {server}\nReason: {reason}"
+			await member.send(message)
 		else:
-				await member.ban(reason=reason)
-				await ctx.send(f"```{member} was banned\nReason: {reason}```")
-				message = f"You were banned from {server}\nReason: {reason}"
-				await member.send(message)
-
+			await member.ban(reason=reason)
+			await ctx.send(f"```{member} was banned\nReason: {reason}```")
+			message = f"You were banned from {server}\nReason: {reason}"
+			await member.send(message)
 
 
 	@commands.command()
 	@has_permissions(ban_members = True)
-	async def unban(self, ctx, member):
+	async def unban(self, ctx, member: commands.MemberConverter):
 		banned_users = await ctx.guild.bans()
+		print(banned_users)
 		member_name, member_discriminator = member.split('#')
 		
 		for ban_entry in banned_users:
-				user = ban_entry.user
+			user = ban_entry.user
+			if str(user.name, user.discriminator) == str(member_name, member_discriminator):
+				await ctx.guild.unban(user)
+				await ctx.send(f'Unbanned {user.mention}')
+				return
 
-				if (user.name, user.discriminator) == (member_name, member_discriminator):
-						await ctx.guild.unban(user)
-						await ctx.send(f'Unbanned {user.mention}')
-						return
+	@commands.command()
+	@has_permissions(ban_members=True)
+	async def unban2(self, ctx, member: commands.MemberConverter):
+		banned_users = await ctx.guild.bans()
+		member_name, member_discriminator = member.split('#')
+		
+		if not banned_users:
+			await ctx.send(f'{member.mention} is not currently banned.')
+			return
+		
+		for ban_entry in banned_users:
+			user = ban_entry.user
+			if user.name == member_name and user.discriminator == member_discriminator:
+				await ctx.guild.unban(user)
+				await ctx.send(f'Unbanned {user.mention}')
+				return
+		
+		await ctx.send(f'{member.mention} is not currently banned.')
 
 	@commands.command()
 	async def ping(self, ctx):
-			await ctx.send(f'`{round(self.bot.latency * 1000)}ms`')
+		await ctx.send(f'`{round(self.bot.latency * 1000)}ms`')
 
 	@commands.command()
 	@has_permissions(kick_members=True)
 	async def kick(self, ctx, member: discord.Member, *, reason = None):
-			if member == ctx.message.author:
-					await ctx.send('are you **REALLY** going to try to kick **YOURSELF**')
-			elif member == None:
-					await ctx.send('whatchu think ima do without a user to kick')
-			elif reason == None:
-					server = ctx.message.guild
-					reason = "No reason given"
-					await member.kick(reason=reason)
-					await ctx.send(f'```{member} was kicked\nReason: {reason}```')
-					message = f"You were kicked from {server}\nReason: {reason}"
-					await member.send(message)
-			else:
-					server = ctx.message.guild
-					await member.kick(reason = reason)
-					await ctx.send(f'```{member} was kicked\nReason: {reason}```')
-					message = f"You were kicked from {server}\nReason: {reason}"
-					await member.send(message)
-
-
-
-
+		if member == ctx.message.author:
+			await ctx.send('are you **REALLY** going to try to kick **YOURSELF**')
+		elif member == None:
+			await ctx.send('whatchu think ima do without a user to kick')
+		elif reason == None:
+			server = ctx.message.guild
+			reason = "No reason given"
+			await member.kick(reason=reason)
+			await ctx.send(f'```{member} was kicked\nReason: {reason}```')
+			message = f"You were kicked from {server}\nReason: {reason}"
+			await member.send(message)
+		else:
+			server = ctx.message.guild
+			await member.kick(reason = reason)
+			await ctx.send(f'```{member} was kicked\nReason: {reason}```')
+			message = f"You were kicked from {server}\nReason: {reason}"
+			await member.send(message)
 
 	@commands.command()
 	@has_permissions(manage_roles=True)
 	async def warn(self, ctx, member: discord.Member = None, *, reason = None):
-			server = ctx.message.guild
-			if member == ctx.message.author:
-					await ctx.send('are you **REALLY** going to try to warn **YOURSELF**')
-			elif member == None:
-					await ctx.send('whatchu think ima do without a user to warn')
-			elif reason == None:
-					reason = "No reason given"
-					await ctx.send(f'```{member} was warned\nReason: {reason}```')
-					message = f"You were warned in {server}\nReason: {reason}"
-					await member.send(message)
-			else:
-					await ctx.send(f'```{member} was warned\nReason: {reason}```')
-					message = f"You were warned from {server}\nReason: {reason}"
-					await member.send(message)
+		server = ctx.message.guild
+		if member == ctx.message.author:
+				await ctx.send('are you **REALLY** going to try to warn **YOURSELF**')
+		elif member == None:
+				await ctx.send('whatchu think ima do without a user to warn')
+		elif reason == None:
+				reason = "No reason given"
+				await ctx.send(f'```{member} was warned\nReason: {reason}```')
+				message = f"You were warned in {server}\nReason: {reason}"
+				await member.send(message)
+		else:
+				await ctx.send(f'```{member} was warned\nReason: {reason}```')
+				message = f"You were warned from {server}\nReason: {reason}"
+				await member.send(message)
 
 	@commands.command(aliases = ['cr'])
 	@has_permissions(manage_roles = True)
@@ -226,6 +248,13 @@ class moderationCommands(commands.Cog):
 			elif isinstance(error, commands.MissingPermissions):
 					await ctx.send('You don\'t have the perm: `Manage Channels`!')
 	
+	@changenick.error
+	async def changenick_error(self, ctx, error):
+		if isinstance(error, commands.MissingRequiredArgument):
+			await ctx.send('Proper Usage: `le changenick [member] [new nickname]`')
+		elif isinstance(error, commands.MissingPermissions):
+			await ctx.send('You don\'t have the perm: `Manage Nicknames`!')
+	
 	@category.error
 	async def category_error(self, ctx, error):
 			if isinstance(error, commands.MissingRequiredArgument):
@@ -240,13 +269,26 @@ class moderationCommands(commands.Cog):
 			elif isinstance(error, commands.MissingPermissions):
 					await ctx.send('You don\'t have the perm: `Manage Server`!')
 
+	@thechannel.error
+	async def the_error(self, ctx, error):
+		if isinstance(error, commands.MissingRequiredArgument):
+			await ctx.send(f'this will delete the current channel: {ctx.channel.name}\nare you sure? type `y` or `n`')
+			msg = await self.bot.wait_for('message', check = lambda m: m.author == ctx.author)
+			if msg.content.lower() == 'y':
+				await ctx.channel.delete()
+			elif msg.content.lower() == 'n':
+				await ctx.send('ok')
+			else:
+				await ctx.send('that\'s not an option, rerun the command')
+		elif isinstance(error, commands.MissingPermissions):
+			await ctx.send('You don\'t have the perm: `Manage Server`!')
+	
 	@channel.error
 	async def channel_error(self, ctx, error):
 			if isinstance(error, commands.MissingRequiredArgument):
 					await ctx.send('Proper Usage: `le new channel [category id] [name]`')
 			elif isinstance(error, commands.MissingPermissions):
 					await ctx.send('You don\'t have the perm: `Manage channels`!')
-
 
 	@autopurge.error
 	async def autopurge_error(self, ctx, error):
@@ -271,10 +313,10 @@ class moderationCommands(commands.Cog):
 
 	@unban.error
 	async def unban_error(self, ctx, error):
-			if isinstance(error, commands.MissingRequiredArgument):
-					await ctx.send('Proper Usage: `le unban [user name#user discriminator]`\n`EX: le unban loser#0000`')
-			elif isinstance(error, commands.MissingPermissions):
-					await ctx.send('You don\'t have the perm: `Ban Members`!')
+		if isinstance(error, commands.MissingRequiredArgument):
+				await ctx.send('Proper Usage: `le unban [user name#user discriminator]`\n`EX: le unban loser#0000`')
+		elif isinstance(error, commands.MissingPermissions):
+				await ctx.send('You don\'t have the perm: `Ban Members`!')
 
 	@warn.error
 	async def warn_error(self, ctx, error):
@@ -290,9 +332,10 @@ class moderationCommands(commands.Cog):
 			elif isinstance(error, commands.MissingPermissions):
 					await ctx.send('You don\'t have the perm: `Manage Roles`!')
 
-
 	@userinfo.error
 	async def userinfo_error(self, ctx, error):
+		if isinstance(error, commands.MissingRequiredArgument):
+
 			member = ctx.message.author
 			roles = [role for role in member.roles]
 
