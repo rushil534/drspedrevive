@@ -19,7 +19,6 @@ class rob(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3600, commands.BucketType.user)
     async def rob(self, ctx, member: discord.Member = None):
-
         try:
             with open(BALANCES_FILE, 'r') as fp: 
                 balances = json.load(fp) 
