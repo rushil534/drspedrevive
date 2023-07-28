@@ -33,6 +33,7 @@ class rob(commands.Cog):
             self.rob.reset_cooldown(ctx)
         elif str(member.id) == user:
             await ctx.send("?")
+            self.rob.reset_cooldown(ctx)
         else:
             if user in balances:
                 if balances[user] >= 5000:
