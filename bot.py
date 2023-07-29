@@ -187,10 +187,10 @@ allowreactionmessage = {}
 PERSONAL_STRING = 'personalstring.json'
 personalstring = {}
 
-ALLOW_MEMBER_MESSAGE = 'allowmembermessage.json'
+ALLOW_MEMBER_MESSAGE_FILE = 'allowmembermessage.json'
 allowmembermessage = {}
 
-MEMBER_MESSAGE = 'membermessage.json'
+MEMBER_MESSAGE_FILE = 'membermessage.json'
 membermessage = {}
 
 CHANNEL_ID = 'channelid.json'
@@ -213,6 +213,21 @@ bot.blacklisted_users = []
 async def change_status():
   await bot.change_presence(status = discord.Status.idle, activity=discord.Game(name="le help"))
 
+def openfile(FILE_NAME):
+  try:
+    with open(FILE_NAME, 'r') as fp:
+      return json.load(fp)
+  except FileNotFoundError:
+    print(f'In on_ready(): File {FILE_NAME} not found. Starting off with an empty dictionary')
+    return {}
+
+def savefile(f, FILE_NAME):
+  try: 
+    with open(FILE_NAME, 'w') as fp: 
+      json.dump(f, fp) 
+  except FileNotFoundError: 
+    return
+
 #======================================================================
 # EVENTS
 
@@ -220,307 +235,12 @@ async def change_status():
 async def on_ready():
   change_status.start()
   print(f'{bot.user.name} is ready')
-  global balances, wools, sheeps, rices, wheats, pigs, meats, healths, ambulances, buffalos, stoves, uncooked_chickens, cooked_chickens, salads, morris, douglas, locations, cities, citypop, entertainment_lvl, pc, park_lvl, power_lvl, blacklisted, bread, mooshroom_cows, bowls, mushroom_stew, times_mooshroom, water_lvl, waste_lvl, commands2, levels, exp, health_lvl, allowreactionmessage, personalstring, allowmembermessage, membermessage, channel_id, fire_lvl, police_lvl
-  
+
   try:
     data = read_json("blacklist.json")
     bot.blacklisted_users = data.get("blacklistedUsers", [])
   except Exception as e:
     print(e)
-
-  try:
-    with open(BALANCES_FILE, 'r') as fp:
-      balances = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BALANCES_FILE} not found. Starting off with an empty dictionary')
-    balances = {}
-
-  try:
-    with open(MUSHROOM_STEW_FILE, 'r') as fp: 
-      mushroom_stew = json.load(fp) 
-  except FileNotFoundError:
-    print(f'In on_ready(): File {MUSHROOM_STEW_FILE} not found. Starting off with an empty balances dictionary.') 
-    mushroom_stew = {} 
-
-  try:
-    with open(TIMES_MOOSHROOM, 'r') as fp: 
-      times_mooshroom = json.load(fp) 
-  except FileNotFoundError:
-    print(f'In on_ready(): File {TIMES_MOOSHROOM} not found. Starting off with an empty balances dictionary.') 
-    times_mooshroom = {} 
-
-  try:
-    with open(SHEEPS_FILE, 'r') as fp:
-      sheeps = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {SHEEPS_FILE} not found. Starting off with an empty dictionary')
-    sheeps = {}
-
-  try:
-    with open(WOOL_FILE, 'r') as fp:
-      wools = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {WOOL_FILE} not found. Starting off with an empty dictionary')
-    wools = {}
-
-  try:
-    with open(RICE_FILE, 'r') as fp:
-      rices = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {RICE_FILE} not found. Starting off with an empty dictionary')
-    rices = {}
-
-  try:
-    with open(WHEAT_FILE, 'r') as fp:
-      wheats = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {WHEAT_FILE} not found. Starting off with an empty dictionary')
-    wheats = {}
-
-  try:
-    with open(PIG_FILE, 'r') as fp:
-      pigs = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {PIG_FILE} not found. Starting off with an empty dictionary')
-    pigs = {}
-
-  try:
-    with open(MEAT_FILE, 'r') as fp:
-      meats = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {MEAT_FILE} not found. Starting off with an empty dictionary')
-    meats = {}
-
-  try:
-    with open(HEALTH_FILE, 'r') as fp:
-      healths = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {HEALTH_FILE} not found. Starting off with an empty dictionary')
-    healths = {}
-
-  try:
-    with open(AMBULANCES_FILE, 'r') as fp:
-      ambulances = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {AMBULANCES_FILE} not found. Starting off with an empty dictionary')
-    ambulances = {}
-
-  try:
-    with open(BUFFALOS_FILE, 'r') as fp:
-      buffalos = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BUFFALOS_FILE} not found. Starting off with an empty dictionary')
-    buffalos = {}
-
-  try:
-    with open(STOVES_FILE, 'r') as fp:
-      stoves = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {STOVES_FILE} not found. Starting off with an empty dictionary')
-    stoves = {}
-
-  try:
-    with open(UNCOOKED_CHICKENS_FILE, 'r') as fp:
-      uncooked_chickens = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {UNCOOKED_CHICKENS_FILE} not found. Starting off with an empty dictionary')
-    uncooked_chickens = {}
-
-  try:
-    with open(COOKED_CHICKENS_FILE, 'r') as fp:
-      cooked_chickens = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {COOKED_CHICKENS_FILE} not found. Starting off with an empty dictionary')
-    cooked_chickens = {}
-
-  try:
-    with open(SALADS_FILE, 'r') as fp:
-      salads = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {SALADS_FILE} not found. Starting off with an empty dictionary')
-    salads = {}
-
-  try:
-    with open(MORRIS_FILE, 'r') as fp:
-      morris = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {MORRIS_FILE} not found. Starting off with an empty dictionary')
-    morris = {}
-
-  try:
-    with open(DOUGLAS_FILE, 'r') as fp:
-      douglas = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {DOUGLAS_FILE} not found. Starting off with an empty dictionary')
-    douglas = {}
-
-  try:
-    with open(LOCATIONS_FILE, 'r') as fp:
-      locations = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {LOCATIONS_FILE} not found. Starting off with an empty dictionary')
-    locations = {}
-
-  try:
-    with open(CITIES_FILE, 'r') as fp:
-      cities = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {CITIES_FILE} not found. Starting off with an empty dictionary')
-    cities = {}
-
-  try:
-    with open(CITYPOP_FILE, 'r') as fp:
-      citypop = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {CITYPOP_FILE} not found. Starting off with an empty dictionary')
-    citypop = {}
-
-  try:
-    with open(ENTERTAINMENT_LVL_FILE, 'r') as fp:
-      entertainment_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {ENTERTAINMENT_LVL_FILE} not found. Starting off with an empty dictionary')
-    entertainment_lvl = {}
-
-  try:
-    with open(PC_FILE, 'r') as fp:
-      pc = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {PC_FILE} not found. Starting off with an empty dictionary')
-    pc = {}
-
-  try:
-    with open(PARK_LVL_FILE, 'r') as fp:
-      park_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {PARK_LVL_FILE} not found. Starting off with an empty dictionary')
-    park_lvl = {}
-
-  try:
-    with open(POWER_LVL_FILE, 'r') as fp:
-      power_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {POWER_LVL_FILE} not found. Starting off with an empty dictionary')
-    power_lvl = {}
-
-  try:
-    with open(BLACKLISTED_FILE, 'r') as fp:
-      blacklisted = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BLACKLISTED_FILE} not found. Starting off with an empty dictionary')
-    blacklisted = {}
-
-  try:
-    with open(BREAD_FILE, 'r') as fp:
-      bread = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BREAD_FILE} not found. Starting off with an empty dictionary')
-    bread = {}
-
-  try:
-    with open(MOOSHROOM_COW_FILE, 'r') as fp:
-      mooshroom_cows = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {MOOSHROOM_COW_FILE} not found. Starting off with an empty dictionary')
-    mooshroom_cows = {}
-
-  try:
-    with open(BOWLS_FILE, 'r') as fp:
-      bowls = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {BOWLS_FILE} not found. Starting off with an empty dictionary')
-    bowls = {}
-
-  try:
-    with open(WATER_LVL_FILE, 'r') as fp:
-      water_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {WATER_LVL_FILE} not found. Starting off with an empty dictionary')
-    water_lvl = {}
-
-  try:
-    with open(WASTE_LVL_FILE, 'r') as fp:
-      waste_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {WASTE_LVL_FILE} not found. Starting off with an empty dictionary')
-    waste_lvl = {}
-
-  try:
-    with open(COMMANDS_FILE, 'r') as fp:
-      commands2 = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {COMMANDS_FILE} not found. Starting off with an empty dictionary')
-    commands2 = {}
-
-  try:
-    with open(LEVEL_FILE, 'r') as fp:
-      levels = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {LEVEL_FILE} not found. Starting off with an empty dictionary')
-    levels = {}
-  
-  try:
-    with open(EXP_FILE, 'r') as fp:
-      exp = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {EXP_FILE} not found. Starting off with an empty dictionary')
-    exp = {}
-
-  try:
-    with open(HEALTH_LVL_FILE, 'r') as fp:
-      health_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {HEALTH_LVL_FILE} not found. Starting off with an empty dictionary')
-    health_lvl = {}
-
-  try:
-    with open(ALLOW_REACTION_MESSAGE, 'r') as fp:
-      allowreactionmessage = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {ALLOW_REACTION_MESSAGE} not found. Starting off with an empty dictionary')
-    allowreactionmessage = {}
-
-  try:
-    with open(PERSONAL_STRING, 'r') as fp:
-      personalstring = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {PERSONAL_STRING} not found. Starting off with an empty dictionary')
-    personalstring = {}
-
-  try:
-    with open(ALLOW_MEMBER_MESSAGE, 'r') as fp:
-      allowmembermessage = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {ALLOW_MEMBER_MESSAGE} not found. Starting off with an empty dictionary')
-    allowmembermessage = {}
-
-  try:
-    with open(MEMBER_MESSAGE, 'r') as fp:
-      membermessage = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {MEMBER_MESSAGE} not found. Starting off with an empty dictionary')
-    membermessage = {}
-
-  try:
-    with open(CHANNEL_ID, 'r') as fp:
-      channel_id = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {CHANNEL_ID} not found. Starting off with an empty dictionary')
-    channel_id = {}
-
-  try:
-    with open(FIRE_LVL_FILE, 'r') as fp:
-      fire_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {FIRE_LVL_FILE} not found. Starting off with an empty dictionary')
-    fire_lvl = {}
-
-  try:
-    with open(POLICE_LVL_FILE, 'r') as fp:
-      police_lvl = json.load(fp)
-  except FileNotFoundError:
-    print(f'In on_ready(): File {POLICE_LVL_FILE} not found. Starting off with an empty dictionary')
-    police_lvl = {}
 
 @bot.event
 async def on_member_join(member):
@@ -554,9 +274,12 @@ async def on_message(message):
 
 @bot.event
 async def on_command(ctx):
-  global commands2
-  global levels, exp
   user = str(ctx.message.author.id)
+
+  levels = openfile(LEVEL_FILE)
+  exp = openfile(EXP_FILE)
+  commands2 = openfile(COMMANDS_FILE)
+
   levels[user] = levels[user] if user in levels else 0
   exp[user] = exp[user] if user in exp else 0
   commands2[user] = commands2[user] if user in commands2 else 0
@@ -650,26 +373,6 @@ async def unblacklist(ctx, user: discord.Member):
       await ctx.send(f'**{user.name}** was never blacklisted')
   else:
     await ctx.send(f'only owner can do this')
-
-@bot.command()
-async def setbank(ctx, member: discord.Member, amount: int):
-  global balances
-  user = str(ctx.message.author.id)
-  member2 = str(member.id)
-  if user == '707091184115253248':
-    if member2 in balances:
-      balances[member2] = amount
-      await ctx.send(f'{member.name}\'s bank account value has been set to : **{amount}**')
-    else:
-      balances[member2] = amount
-      await ctx.send(f'they didnt have a bank account, they do now with {amount} coins')
-
-  print(f'In setbank(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In setbank(): File {BALANCES_FILE} not found! Not sure what to do here!') 
 
 #============================================================================
 
@@ -833,8 +536,9 @@ async def text_subcommand(ctx):
 @bot.command(aliases = ['mm'])
 @has_permissions(manage_guild = True)
 async def membermessage(ctx):
-  global allowmembermessage
+
   server = str(ctx.guild.id)
+  allowmembermessage = openfile(ALLOW_MEMBER_MESSAGE_FILE)
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
 
   if allowmembermessage[server] == 0:
@@ -844,18 +548,16 @@ async def membermessage(ctx):
     await ctx.send('Sending messages when a member joins is set to: **False**')
     allowmembermessage[server] = 0
 
-  print(f'In beg(): Saving balances = {allowmembermessage}')
-  try: 
-    with open(ALLOW_MEMBER_MESSAGE, 'w') as fp: 
-      json.dump(allowmembermessage, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {ALLOW_MEMBER_MESSAGE} not found! Not sure what to do here!') 
+  savefile(allowmembermessage, ALLOW_MEMBER_MESSAGE_FILE)
 
 @bot.command(aliases = ['smm'])
 @has_permissions(manage_guild=True)
 async def setmembermessage(ctx, *, string: str):
-  global allowmembermessage, membermessage
   server = str(ctx.guild.id)
+
+  allowmembermessage = openfile(ALLOW_MEMBER_MESSAGE_FILE)
+  membermessage = openfile(MEMBER_MESSAGE_FILE)
+
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
   membermessage[server] = membermessage[server] if server in membermessage else ''
 
@@ -864,37 +566,41 @@ async def setmembermessage(ctx, *, string: str):
     msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
     if msg.content.lower() == 'y' or msg.content.lower() == 'Y':
       membermessage[server] = string
-      await ctx.send('completed, btw you need to give me a proper channel id to send the messages to using `le setchannelid`\nif the id is not proper, then you can guess why its not working')
+      await ctx.send('completed, btw you need to give me a proper channel id to send the messages to using `le setchannelid`\nif the id isn\'t valid, then you can guess why its not working')
     elif msg.content.lower() == 'N' or msg.content.lower() == 'n':
       await ctx.send('rip lol you chose not to use that')
       membermessage[server] == ''
   else:
     await ctx.send('you don\'t even have member joining messaging enabled! to do that do `le membermessage`')
 
-  print(f'In beg(): Saving balances = {membermessage}')
-  try: 
-    with open(MEMBER_MESSAGE, 'w') as fp: 
-      json.dump(membermessage, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {MEMBER_MESSAGE} not found! Not sure what to do here!') 
-  
-@bot.command()
-async def viewmembermessage(ctx):
-  global membermessage
-  server = str(ctx.guild.id)
-  if server in membermessage:
-    if membermessage[server] == '':
-      await ctx.send('You don\'t have a member joining message set!')
-    else:
-      await ctx.send(f'{membermessage[server]}')
-  else:
-    await ctx.send('You don\'t have a member joining message set!')
+  savefile(membermessage, MEMBER_MESSAGE_FILE)
 
-@bot.command()
+@bot.command(aliases = ['vmm'])
+async def viewmembermessage(ctx):
+  server = str(ctx.guild.id)
+
+  membermessage = openfile(MEMBER_MESSAGE_FILE)
+  allowmembermessage = openfile(ALLOW_MEMBER_MESSAGE_FILE)
+
+  if allowmembermessage[server] == 1:
+    if server in membermessage:
+      if membermessage[server] == '':
+        await ctx.send('You don\'t have a member joining message set!')
+      else:
+        await ctx.send(f'{membermessage[server]}')
+    else:
+      await ctx.send('You don\'t have a member joining message set!')
+  else:
+    await ctx.send('you don\'t even have member joining messaging enabled! to do that do `le membermessage`')
+
+@bot.command(aliases = ['sci'])
 @has_permissions(manage_guild = True)
 async def setchannelid(ctx, id: int):
-  global channel_id, allowmembermessage
   server = str(ctx.guild.id)
+
+  allowmembermessage = openfile(ALLOW_MEMBER_MESSAGE_FILE)
+  channel_id = openfile(CHANNEL_ID)
+
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
   channel_id[server] = channel_id[server] if server in channel_id else 0
   
@@ -902,8 +608,6 @@ async def setchannelid(ctx, id: int):
     prefixes = json.load(f)
 
   x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
-
-  
 
   if len(str(id)) != 19:
     await ctx.send('that isn\'t a valid channel id')
@@ -915,19 +619,17 @@ async def setchannelid(ctx, id: int):
   else:
     await ctx.send(f'i can\'t do that without the member joining message function enabled buddy\nenable it by using `{x}membermessage`')
 
-  print(f'In beg(): Saving balances = {channel_id}')
-  try: 
-    with open(CHANNEL_ID, 'w') as fp: 
-      json.dump(channel_id, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {CHANNEL_ID} not found! Not sure what to do here!')
+  savefile(channel_id, CHANNEL_ID)
 
 @bot.command()
 @has_permissions(manage_guild = True)
 async def reactionmessage(ctx):
-  global allowreactionmessage
-  server = str(ctx.guild.id) 
+  server = str(ctx.guild.id)
+  
+  allowmembermessage = openfile(ALLOW_MEMBER_MESSAGE_FILE)
+ 
   allowreactionmessage[server] = allowreactionmessage[server] if server in allowreactionmessage else 0
+  
   if allowreactionmessage[server] == 0:
     await ctx.send('Sending messages when reactions are executed is set to: **True**')
     allowreactionmessage[server] = 1
@@ -935,12 +637,7 @@ async def reactionmessage(ctx):
     await ctx.send('Sending messages when reactions are executed is set to: **False**')
     allowreactionmessage[server] = 0
 
-  print(f'In beg(): Saving balances = {allowreactionmessage}')
-  try: 
-    with open(ALLOW_REACTION_MESSAGE, 'w') as fp: 
-      json.dump(allowreactionmessage, fp) 
-  except FileNotFoundError: 
-    print(f'In balances(): File {ALLOW_REACTION_MESSAGE} not found! Not sure what to do here!') 
+  savefile(allowmembermessage, ALLOW_MEMBER_MESSAGE_FILE)
 
 #============================================================================
 
@@ -1070,7 +767,7 @@ async def guess(ctx):
   if msg.content.startswith(f'{answer}'):
     await ctx.send('correct')
   else:
-    await ctx.send(f'wrong, it was **{answer}**')
+    await ctx.send(f'lol it was {answer}')
 
 #============================================================================
 # ECONOMY COMMANDS
@@ -1160,75 +857,6 @@ async def use_bread_subcommand(ctx):
       json.dump(bread, fp) 
   except FileNotFoundError: 
     print(f'In use(): File {BREAD_FILE} not found! Not sure what to do here!')   
-
-#=============================================================================================================
-
-#=============================================================================================================
-# COOK
-
-@bot.group(pass_context = True)
-async def cook(ctx):
-  if ctx.subcommand_passed is None:
-    await ctx.send('Proper Usage: `cook [item]`')
-  elif ctx.invoked_subcommand is None:
-    await ctx.send(f"you can only cook **chicken**")
-
-@cook.command(name = 'chicken', aliases = ['chickens'])
-@commands.cooldown(1, 1800, commands.BucketType.user)
-async def cook_chicken_subcommand(ctx):
-  global uncooked_chickens, cooked_chickens, stoves, healths
-  user = str(ctx.message.author.id)
-  healths[user] = healths[user] if user in healths else 100
-  stoves[user] = stoves[user] if user in stoves else 0
-  cooked_chickens[user] = cooked_chickens[user] if user in cooked_chickens else 0
-  uncooked_chickens[user] = uncooked_chickens[user] if user in uncooked_chickens else 0 
-
-  if healths[user] >= 10:
-    if stoves[user] > 0:
-      if uncooked_chickens[user] > 0:
-        chicken = uncooked_chickens[user] * 3
-        cooked_chickens[user] += chicken
-        healths[user] -= 10
-        stoves[user] -= 1 
-        embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :chicken: {chicken} chickens from his :hatched_chick: Uncooked Chickens!", color = random.choice(random_colors))
-        await ctx.send(embed = embed)   
-      else:
-        await ctx.send('You don\'t have any uncooked chicken!')  
-        cook_chicken_subcommand.reset_cooldown(ctx)
-    else:
-      await ctx.send('You don\'t have any stoves!')
-      cook_chicken_subcommand.reset_cooldown(ctx)
-      
-  else:
-    await ctx.send('You don\'t have enough health for this action!')
-
-  print(f'In cook(): Saving healths = {healths}')
-  try: 
-    with open(HEALTH_FILE, 'w') as fp: 
-      json.dump(healths, fp) 
-  except FileNotFoundError: 
-    print(f'In cook(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-  print(f'In cook(): Saving stoves = {stoves}')
-  try: 
-    with open(STOVES_FILE, 'w') as fp: 
-      json.dump(stoves, fp) 
-  except FileNotFoundError: 
-    print(f'In cook(): File {STOVES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In cook(): Saving uncooked chickens = {uncooked_chickens}')
-  try: 
-    with open(UNCOOKED_CHICKENS_FILE, 'w') as fp: 
-      json.dump(uncooked_chickens, fp) 
-  except FileNotFoundError: 
-    print(f'In cook(): File {UNCOOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
-
-  print(f'In cook(): Saving cooked chickens = {cooked_chickens}')
-  try: 
-    with open(COOKED_CHICKENS_FILE, 'w') as fp: 
-      json.dump(cooked_chickens, fp) 
-  except FileNotFoundError: 
-    print(f'In cook(): File {COOKED_CHICKENS_FILE} not found! Not sure what to do here!') 
 
 #=============================================================================================================
 
@@ -1875,8 +1503,9 @@ async def buy_pig_subcommand(ctx, amount: int = None):
 
 @buy.command(name = 'ambulance', aliases = ['ambulances'])
 async def buy_ambulance_subcommand(ctx, amount: int = None):
-  global ambulances, meats
+  global meats
   user = str(ctx.message.author.id)
+  ambulances = openfile(AMBULANCES_FILE)
   ambulances[user] = ambulances[user] if user in ambulances else 0
   meats[user] = meats[user] if user in meats else 0
 
@@ -3597,8 +3226,29 @@ async def daily(ctx):
 
 @bot.command()
 async def farm(ctx):
-  global sheeps, wools, rices, wheats, pigs, meats, ambulances, buffalos, stoves, uncooked_chickens, cooked_chickens, salads, morris, douglas, locations, pc, bread, mooshroom_cows, bowls, mushroom_stew, commands2
   user = str(ctx.message.author.id)
+
+  locations = openfile(LOCATIONS_FILE)
+  morris = openfile(MORRIS_FILE)
+  douglas = openfile(DOUGLAS_FILE)
+  salads = openfile(SALADS_FILE)
+  cooked_chickens = openfile(COOKED_CHICKENS_FILE)
+  uncooked_chickens = openfile(UNCOOKED_CHICKENS_FILE)
+  stoves = openfile(STOVES_FILE)
+  buffalos = openfile(BUFFALOS_FILE)
+  wools = openfile(WOOL_FILE)
+  rices = openfile(RICE_FILE)
+  wheats = openfile(WHEAT_FILE)
+  pigs = openfile(PIG_FILE)
+  meats = openfile(MEAT_FILE)
+  ambulances = openfile(AMBULANCES_FILE)
+  pc = openfile(PC_FILE)
+  bread = openfile(BREAD_FILE)
+  mooshroom_cows = openfile(MOOSHROOM_COW_FILE)
+  bowls = openfile(BOWLS_FILE)
+  mushroom_stew = openfile(MUSHROOM_STEW_FILE)
+  commands2 = openfile(COMMANDS_FILE)
+
   locations[user] = locations[user] if user in locations else 0
   morris[user] = morris[user] if user in morris else 0
   douglas[user] = douglas[user] if user in douglas else 0
@@ -3683,21 +3333,6 @@ async def profile(ctx, member: discord.Member = None):
     embed.add_field(name = 'Commands Invoked', value = f'{commands2[user]}', inline = True)
     embed.add_field(name = '\nUltimate Sped', value = f'Level: **{levels[user]}** Exp: **{exp[user]}**', inline = False)
     await ctx.send(embed = embed)
-
-@bot.command()
-@commands.cooldown(1, 600, commands.BucketType.user)
-async def grab(ctx):
-  global balances
-  AIRDROP_LOOT = random.randint(500,1200)
-  user = str(ctx.message.author.id)
-  if user in balances:
-    embed = discord.Embed(description = f'{ctx.message.author} just grabbed an airdrop for ¢{AIRDROP_LOOT}', color = random.choice(random_colors))
-    balances[user] += AIRDROP_LOOT
-    await ctx.send(embed=embed)
-  else:
-    print(f'In buy(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
-    balances[user] = START_BAL 
-    await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {START_BAL}') 
 
 @bot.command()
 async def give(ctx, member: discord.Member, amount: int):
@@ -4280,20 +3915,6 @@ async def daily_error(ctx, error):
     m, s = divmod(error.retry_after, 60 )
     h, m = divmod(m, 60)
     await ctx.send(f'wait **{round(h)} hours and {round(m)} minutes** to get ur daily coins ')
-    return
-
-@grab.error
-async def grab_error(ctx, error):
-  if isinstance(error, commands.CommandOnCooldown):
-    m, s = divmod(error.retry_after, 60)
-    await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to grab another airdrop ')
-    return
-
-@cook_chicken_subcommand.error
-async def cook_chicken_subcommand_error(ctx, error):
-  if isinstance(error, commands.CommandOnCooldown):
-    m, s = divmod(error.retry_after, 60)
-    await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to cook chicken again')
     return
 
 @twitch.error
