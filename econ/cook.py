@@ -34,13 +34,14 @@ class cook(commands.Cog):
         mainbot.cooked_chickens[user] = mainbot.cooked_chickens[user] if user in mainbot.cooked_chickens else 0
         mainbot.uncooked_chickens[user] = mainbot.uncooked_chickens[user] if user in mainbot.uncooked_chickens else 0 
 
-        if mainbot.healths[user] >= 10:
+        if mainbot.healths[user] >= 5:
             if mainbot.stoves[user] > 0:
                 if mainbot.uncooked_chickens[user] > 0:
                     chicken = mainbot.uncooked_chickens[user] * 3
                     mainbot.cooked_chickens[user] += chicken
-                    mainbot.healths[user] -= 10
+                    mainbot.healths[user] -= 5
                     mainbot.stoves[user] -= 1 
+                    mainbot.uncooked_chickens[user] = 0
                     embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :chicken: {chicken} chickens from his :hatched_chick: Uncooked Chickens!", color = random.choice(mainbot.random_colors))
                     await ctx.send(embed = embed)   
                 else:
