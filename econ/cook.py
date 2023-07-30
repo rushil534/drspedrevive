@@ -1,6 +1,5 @@
 from discord.ext import commands
 import sys
-import json
 import discord
 import random
 
@@ -12,7 +11,7 @@ class cook(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(pass_context = True)
+    @commands.group()
     async def cook(self, ctx):
         if ctx.subcommand_passed is None:
             await ctx.send('Proper Usage: `cook [item]`')
