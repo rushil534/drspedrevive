@@ -1,34 +1,46 @@
 from discord.ext import commands
 import sys
-import discord
 import random
 
 sys.path.append('C:/Users/mantr/Desktop/ds-master')  
 
 import bot as mainbot
 
-class balance(commands.Cog):
+class plead(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases = ['bal'])
-    async def balance(self, ctx, member: discord.Member = None): 
+    @commands.command()
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def plead(self, ctx):
         mainbot.balances = mainbot.openfile(mainbot.BALANCES_FILE)
+        mainbot.healths = mainbot.openfile(mainbot.HEALTH_FILE)
+        mainbot.locations = mainbot.openfile(mainbot.LOCATIONS_FILE)
 
-        user = str(ctx.message.author.id)
-        if member is None:
-            if user in mainbot.balances:
-                embed = discord.Embed(title=f":moneybag: {ctx.message.author.name}'s balance", description=f"**Bank Account**: {mainbot.balances[user]:,d}/ꝏ", color = random.choice(mainbot.random_colors))
-                await ctx.send(embed=embed)
-            else:
-                mainbot.balances[user] = 100
-                await ctx.send('You didnt have an account so i made you one with a start of 100 coins')
-        else:
-            if str(member.id) in mainbot.balances:
-                embed = discord.Embed(title=f":moneybag: {member.name}'s balance", description=f"**Bank Account**: {mainbot.balances[str(member.id)]:,d}/ꝏ", color = random.choice(mainbot.random_colors))
-                await ctx.send(embed=embed)
-            else:
-                await ctx.send('user doesn\'t have an acc')
+        INCREMENT = random.randint(20, 70)
+        user = str(ctx.message.author.id) 
+
+        if user in mainbot.balances: 
+            names = ["**Kanye West**", "**Lindsay Lohan**", "**Azealia Banks**", "**Justin Bieber**", "**Roseanne Barr**", "**Charlie Sheen**", "**Amanda Bynes**", "**Woody Allen**", "**Mel Gibson**", "**R. Kelly**"]
+            await ctx.send(random.choice(names) + f' donated {INCREMENT} coins to {ctx.message.author.mention}!')
+            mainbot.balances[user] += INCREMENT
+        else: 
+            mainbot.balances[user] = mainbot.START_BAL 
+            mainbot.healths[user] = 100
+            mainbot.locations[user] = 0
+            await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with {mainbot.START_BAL} coins') 
+            self.plead.reset_cooldown(ctx)
+
+        mainbot.savefile(mainbot.healths, mainbot.HEALTH_FILE)
+        mainbot.savefile(mainbot.balances, mainbot.BALANCES_FILE)
+        mainbot.savefile(mainbot.locations, mainbot.LOCATIONS_FILE)
+
+    @plead.error
+    async def plead_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            m, s = divmod(error.retry_after, 60)
+            await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to plead again ')
+            return
 
 async def setup(bot):
-    await bot.add_cog(balance(bot)) 
+    await bot.add_cog(plead(bot)) 
