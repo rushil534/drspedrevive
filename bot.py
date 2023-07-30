@@ -8,9 +8,6 @@ from discord.utils import get
 import datetime
 import os
 from discord.ext.commands import has_permissions
-import aiohttp
-import re
-import urllib.parse, urllib.request
 from operator import itemgetter
 
 # WHITE      : 0xFFFFFF
@@ -244,8 +241,12 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-  global membermessage, allowmembermessage, channel_id
   server = str(member.guild.id)
+
+  membermessage = openfile(MEMBER_MESSAGE_FILE)
+  allowmembermessage = openfile(ALLOW_MEMBER_MESSAGE_FILE)
+  channel_id = openfile(CHANNEL_ID)
+
   membermessage[server] = membermessage[server] if server in membermessage else ''
   allowmembermessage[server] = allowmembermessage[server] if server in allowmembermessage else 0
   channel_id[server] = channel_id[server] if server in channel_id else 0
@@ -318,8 +319,10 @@ async def on_command(ctx):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-  global allowreactionmessage
   server = str(reaction.message.guild.id)
+
+  allowreactionmessage = openfile(ALLOW_REACTION_MESSAGE)
+
   allowreactionmessage[server] = allowreactionmessage[server] if server in allowreactionmessage else 0
   channel = reaction.message.channel
   while allowreactionmessage[server] == 1:
@@ -426,7 +429,7 @@ async def resetprefix(ctx):
 #=============================================================================================================
 # HELP
 
-@bot.group(invoke_without_command = True, pass_context = True)
+@bot.group(invoke_without_command = True)
 async def help(ctx):
 
   with open(r"prefixes.json", 'r') as f:
@@ -585,11 +588,11 @@ async def viewmembermessage(ctx):
   if allowmembermessage[server] == 1:
     if server in membermessage:
       if membermessage[server] == '':
-        await ctx.send('You don\'t have a member joining message set!')
+        await ctx.send('you don\'t have a member joining message set!')
       else:
         await ctx.send(f'{membermessage[server]}')
     else:
-      await ctx.send('You don\'t have a member joining message set!')
+      await ctx.send('you don\'t have a member joining message set!')
   else:
     await ctx.send('you don\'t even have member joining messaging enabled! to do that do `le membermessage`')
 
@@ -654,7 +657,7 @@ async def status(ctx, member: discord.Member = None):
 @bot.command()
 async def fat(ctx, member: discord.Member = None):
   if member is None:
-    embed = discord.Embed(title="fatness determiner", description=f"You are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
+    embed = discord.Embed(title="fatness determiner", description=f"you are {random.randint(1, 100)}% fat", color = random.choice(random_colors))
     await ctx.send(embed=embed)
   else:
     embed = discord.Embed(title="fatness determiner", description=f"{member.name} is {random.randint(1, 100)}% fat", color = random.choice(random_colors))
@@ -719,44 +722,44 @@ async def slots(ctx):
   await msg.edit(content='| {} | {} | {} | {} | {} |\n| {} | {} | {} | {} | {} |\n| {} | {} | {} | {} | {} |\n| {} | {} | {} | {} | {} |\n| {} | {} | {} | {} | {} |\n {} Is Spinning'.format(slot1, slot2, slot3, slot4, slot5, slot6, slot7, slot8, slot9, slot10, slot11, slot12, slot13, slot14, slot15, slot16, slot17, slot18, slot19, slot20, slot21, slot22, slot23, slot24, slot25, ctx.message.author.mention))
 
   if slot1 == slot2 == slot3 == slot4 == slot5:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results0,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results0,ctx.message.author.mention),delete_after=3)
   elif slot6 == slot7 == slot8 == slot9 == slot10:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results1,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results1,ctx.message.author.mention),delete_after=3)
   elif slot11 == slot12 == slot13 == slot14 == slot15:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results2,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results2,ctx.message.author.mention),delete_after=3)
   elif slot16 == slot17 == slot18 == slot19 == slot20:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results3,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results3,ctx.message.author.mention),delete_after=3)
   elif slot21 == slot22 == slot23 == slot24 == slot25:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results4,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results4,ctx.message.author.mention),delete_after=3)
   elif slot1 == slot6 == slot11 == slot16 == slot21:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results5,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results5,ctx.message.author.mention),delete_after=3)
   elif slot2 == slot7 == slot12 == slot17 == slot22:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results6,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results6,ctx.message.author.mention),delete_after=3)
   elif slot3 == slot8 == slot13 == slot18 == slot23:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results7,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results7,ctx.message.author.mention),delete_after=3)
   elif slot4 == slot9 == slot14 == slot19 == slot24:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results8,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results8,ctx.message.author.mention),delete_after=3)
   elif slot5 == slot10 == slot15 == slot20 == slot25:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results9,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results9,ctx.message.author.mention),delete_after=3)
   elif slot1 == slot7 == slot13 == slot19 == slot25:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results10,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results10,ctx.message.author.mention),delete_after=3)
   elif slot5 == slot9 == slot13 == slot17 == slot21:
-      #await ctx.message.channel.send( "{}\n {} You Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Won".format(results11,ctx.message.author.mention),delete_after=3)
+      #await ctx.message.channel.send( "{}\n {} you Won".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Won".format(results11,ctx.message.author.mention),delete_after=3)
   else:
-      #await ctx.message.channel.send("{}\n {} You Lost".format(slotOutput,ctx.message.author.mention),delete_after=5)
-      await msg.edit(content="{}\n {} You Lost".format(slotOutput,ctx.message.author.mention))
+      #await ctx.message.channel.send("{}\n {} you Lost".format(slotOutput,ctx.message.author.mention),delete_after=5)
+      await msg.edit(content="{}\n {} you Lost".format(slotOutput,ctx.message.author.mention))
 
 @bot.command()
 async def guess(ctx):
@@ -773,233 +776,12 @@ async def guess(ctx):
 # ECONOMY COMMANDS
 
 #=============================================================================================================
-# USE
-
-@bot.group(pass_context = True)
-async def use(ctx):
-  if ctx.subcommand_passed is None:
-    await ctx.send('Proper Usage: `use [item]`')
-  elif ctx.invoked_subcommand is None:
-    await ctx.send(f"you can only use **ambulances** or **bread**")
-
-@use.command(name = 'ambulance', aliases = ['ambulances'])
-async def use_ambulance_subcommand(ctx):
-  global ambulances, healths
-  user = str(ctx.message.author.id)
-  ambulances[user] = ambulances[user] if user in ambulances else 0
-  healths[user] = healths[user] if user in healths else 0
-
-  if user in ambulances:
-    if ambulances[user] >= 1:
-      if user in healths:
-        if healths[user] < 100:
-          healths[user] = 100
-          ambulances[user] -= 1
-          await ctx.send(f'{ctx.message.author.mention} has just healed themselves to 100 health!')
-        else:
-          await ctx.send('You can\'t dose that, you have full health!')
-      else:
-        await ctx.send('you didn\'t have a health bar apparently. i started you off w `100 health`')
-        healths[user] = 100
-    else:
-      await ctx.send('You don\'t have any ambulances with u')
-  else:
-    await ctx.send('you have no ambulances at all')
-
-  print(f'In use(): Saving ambulances = {ambulances}')
-  try: 
-    with open(AMBULANCES_FILE, 'w') as fp: 
-      json.dump(ambulances, fp) 
-  except FileNotFoundError: 
-    print(f'In use(): File {AMBULANCES_FILE} not found! Not sure what to do here!') 
-
-  print(f'In use(): Saving healths = {healths}')
-  try: 
-    with open(HEALTH_FILE, 'w') as fp: 
-      json.dump(healths, fp) 
-  except FileNotFoundError: 
-    print(f'In use(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-@use.command(name = 'bread', aliases = ['breads'])
-async def use_bread_subcommand(ctx):
-  global bread, healths
-  user = str(ctx.message.author.id)
-  bread[user] = bread[user] if user in bread else 0
-  healths[user] = healths[user] if user in healths else 0
-
-  if user in bread:
-    if bread[user] >= 1:
-      if user in healths:
-        if healths[user] < 60:
-          healths[user] = 60
-          bread[user] -= 1
-          await ctx.send(f'{ctx.message.author.mention} has just healed themselves to 60 health!')
-        else:
-          await ctx.send('you have more than 60 health')
-      else:
-        await ctx.send('you didn\'t have a health bar apparently. i started you off w `100 health`')
-        healths[user] = 100
-    else:
-      await ctx.send('you have no bread')
-  else:
-    await ctx.send('you have no bread')
-
-  print(f'In use(): Saving healths = {healths}')
-  try: 
-    with open(HEALTH_FILE, 'w') as fp: 
-      json.dump(healths, fp) 
-  except FileNotFoundError: 
-    print(f'In use(): File {HEALTH_FILE} not found! Not sure what to do here!') 
-
-  print(f'In use(): Saving bread = {bread}')
-  try: 
-    with open(BREAD_FILE, 'w') as fp: 
-      json.dump(bread, fp) 
-  except FileNotFoundError: 
-    print(f'In use(): File {BREAD_FILE} not found! Not sure what to do here!')   
-
-#=============================================================================================================
-
-#=============================================================================================================
-# SELL
-
-@bot.group(pass_context = True)
-async def sell(ctx):
-  if ctx.subcommand_passed is None:
-    await ctx.send('Proper Usage: `sell [item] [amount]`')
-  elif ctx.invoked_subcommand is None:
-    await ctx.send(f"you can only sell **wheat**, **wool**, or **meat**")
-
-@sell.command(name = 'wheat', aliases = ['wheats'])
-async def sell_wheat_subcommand(ctx, amount: int = None):
-  global wheats, balances
-  user = str(ctx.message.author.id)
-  wheats[user] = wheats[user] if user in wheats else 0
-  balances[user] = balances[user] if user in balances else 0
-  
-  if amount is None:
-    amount = 1
-  
-  if amount <= 0:
-    await ctx.send("rerun the command with a value above 0")
-    return
-
-  if user in wheats:
-    if wheats[user] >= amount:
-      crypto_for_selling_wheat = amount * 10
-      wheats[user] -= amount
-      balances[user] += crypto_for_selling_wheat
-      embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_wheat} coins` for selling **{amount}** wheat', color = random.choice(random_colors))
-      await ctx.send(embed = embed)
-    else:
-      await ctx.send('you don\'t have enough wheat for that lmao')
-  else:
-    await ctx.send('you have no wheat at all')
-
-  print(f'In sell(): Saving wheats = {wheats}')
-  try: 
-    with open(WHEAT_FILE, 'w') as fp: 
-      json.dump(wheats, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {WHEAT_FILE} not found! Not sure what to do here!') 
-  
-  print(f'In sell(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-
-@sell.command(name = 'wool', aliases = ['wools'])
-async def sell_wool_subcommand(ctx, amount: int = None):
-  global wools, balances
-  user = str(ctx.message.author.id)
-  wools[user] = wools[user] if user in wools else 0
-  balances[user] = balances[user] if user in balances else 0
-  
-  if amount is None:
-    amount = 1
-  
-  if amount <= 0:
-    await ctx.send("rerun the command with a value above 0")
-    return
-  
-  if user in wools:
-    if wools[user] >= amount:
-      crypto_for_selling_wool = amount * 15
-      wools[user] -= amount
-      balances[user] += crypto_for_selling_wool
-      embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_wool} coins` for selling **{amount}** wool', color = random.choice(random_colors))
-      await ctx.send(embed = embed)
-    else:
-      await ctx.send('you don\'t have enough wool for that lmao')
-  else:
-    await ctx.send('you have no wool at all')
-  
-  print(f'In sell(): Saving wool = {wools}')
-  try: 
-    with open(WOOL_FILE, 'w') as fp: 
-      json.dump(wools, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {WOOL_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-@sell.command(name = 'meat', aliases = ['meats'])
-async def sell_meat_subcommand(ctx, amount: int = None):
-  global meats, balances
-  user = str(ctx.message.author.id)
-  meats[user] = meats[user] if user in meats else 0
-  balances[user] = balances[user] if user in balances else 0
-  
-  if amount is None:
-    amount = 1
-  
-  if amount <= 0:
-    await ctx.send("rerun the command with a value above 0")
-    return
-  
-  if user in meats:
-    if meats[user] >= amount:
-      crypto_for_selling_meat = amount * 25
-      meats[user] -= amount
-      balances[user] += crypto_for_selling_meat
-      embed = discord.Embed(title = 'Sale Complete', description = f'You gained `{crypto_for_selling_meat} coins` for selling **{amount}** meat', color = random.choice(random_colors))
-      await ctx.send(embed = embed)
-    else:
-      await ctx.send('you don\'t have enough meat for that lmao')
-  else:
-    await ctx.send('you have no meat at all')
-
-  print(f'In sell(): Saving meats = {meats}')
-  try: 
-    with open(MEAT_FILE, 'w') as fp: 
-      json.dump(meats, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {MEAT_FILE} not found! Not sure what to do here!') 
-
-  print(f'In sell(): Saving balances = {balances}')
-  try: 
-    with open(BALANCES_FILE, 'w') as fp: 
-      json.dump(balances, fp) 
-  except FileNotFoundError: 
-    print(f'In sell(): File {BALANCES_FILE} not found! Not sure what to do here!') 
-
-#=============================================================================================================
-
-#=============================================================================================================
 # FLY
 
 # 0 IS CALIFORNIA
 # 1 IS TEXAS
 
-@bot.group(pass_context = True)
+@bot.group()
 async def fly(ctx):
   if ctx.subcommand_passed is None:
     await ctx.send('Proper Usage: `fly [morris/douglas]`')
@@ -1020,7 +802,7 @@ async def fly_morris_subcommand(ctx):
   x = prefixes[str(ctx.guild.id)] if str(ctx.guild.id) in prefixes else 'le '
 
   if morris[user] >= 1:
-    await ctx.send('You have a 25% chance of getting air sick, causing you to lose about 5-9 health.\nStill want to fly on this plane? `y` or `n`')
+    await ctx.send('you have a 25% chance of getting air sick, causing you to lose about 5-9 health.\nStill want to fly on this plane? `y` or `n`')
     msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
     if msg.content.lower() == 'y':
       if healths[user] < 9:
@@ -1040,10 +822,10 @@ async def fly_morris_subcommand(ctx):
             healths[user] -= HEALTH_LOSS
             await ctx.send(f'welp you got air sick, causing you to lose {HEALTH_LOSS} health')
             locations[user] = 0
-            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+            await ctx.send(f'you are in California now! Things to do are `{x}farm`')
           else:
             locations[user] = 0
-            await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+            await ctx.send(f'you are in California now! Things to do are `{x}farm`')
         else:
           await ctx.send('you don\'t have a location value')
       elif msg.content.lower() == 'texas':
@@ -1059,11 +841,11 @@ async def fly_morris_subcommand(ctx):
             healths[user] -= HEALTH_LOSS
             locations[user] = 1
             await asyncio.sleep(1.5)
-            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+            await ctx.send(f'you are in Texas now! Things to do are `{x}city`')
           else:
             locations[user] = 1
             await asyncio.sleep(1.5)
-            await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+            await ctx.send(f'you are in Texas now! Things to do are `{x}city`')
         else:
           await ctx.send('you don\'t have a location value')
       else:
@@ -1071,7 +853,7 @@ async def fly_morris_subcommand(ctx):
     elif msg.content.lower() == 'n':
       await ctx.send('alright, flight cancelled')
   else:
-    await ctx.send('You don\'t have the Morris jet!')
+    await ctx.send('you don\'t have the Morris jet!')
 
   print(f'In fly(): Saving locations = {locations}')
   try: 
@@ -1109,7 +891,7 @@ async def fly_douglas_subcommand(ctx):
           await ctx.send('Travelling back to california!')
           locations[user] = 0
           await asyncio.sleep(1.5)
-          await ctx.send(f'You are in California now! Things to do are `{x}farm`')
+          await ctx.send(f'you are in California now! Things to do are `{x}farm`')
       else:
         await ctx.send('you don\'t have a location value')
     elif msg.content.lower() == 'texas':
@@ -1119,13 +901,13 @@ async def fly_douglas_subcommand(ctx):
           await ctx.send('Travelling to Texas!')
           locations[user] = 1
           await asyncio.sleep(1.5)
-          await ctx.send(f'You are in Texas now! Things to do are `{x}city`')
+          await ctx.send(f'you are in Texas now! Things to do are `{x}city`')
       else:
         await ctx.send('you don\'t have a location value')
     else:
       await ctx.send('not an option; rerun the command')
   else:
-    await ctx.send('You don\'t have the Douglas jet!')
+    await ctx.send('you don\'t have the Douglas jet!')
 
   print(f'In fly(): Saving locations = {locations}')
   try: 
@@ -1139,7 +921,7 @@ async def fly_douglas_subcommand(ctx):
 #=============================================================================================================
 # BUY
 
-@bot.group(pass_context = True)
+@bot.group()
 async def buy(ctx):
   if ctx.subcommand_passed is None:
     await ctx.send('Proper Usage: `buy [item] [amount]`')
@@ -1173,15 +955,15 @@ async def buy_morris_subcommand(ctx, amount: int = None):
             meats[user] -= 1500
             balances[user] -= 10000
             morris[user] += 1
-            await ctx.send(f'Congratulations {ctx.message.author.mention}! You have bought a Morris X8200 jet!')
+            await ctx.send(f'Congratulations {ctx.message.author.mention}! you have bought a Morris X8200 jet!')
           else: 
-            await ctx.send('You don\'t have enough wheat for this!')
+            await ctx.send('you don\'t have enough wheat for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       else:
-        await ctx.send('You don\'t have enough meat for this!')
+        await ctx.send('you don\'t have enough meat for this!')
     else:
-      await ctx.send('You don\'t have enough money for this!')
+      await ctx.send('you don\'t have enough money for this!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1242,15 +1024,15 @@ async def buy_douglas_subcommand(ctx, amount: int = None):
             stoves[user] -= 10
             balances[user] -= 75000
             douglas[user] += 1
-            await ctx.send(f'Congratulations {ctx.message.author.mention}! You just cought a Douglas 900ER jet!')
+            await ctx.send(f'Congratulations {ctx.message.author.mention}! you just cought a Douglas 900ER jet!')
           else:
-            await ctx.send('You don\'t have enough stoves for this!')
+            await ctx.send('you don\'t have enough stoves for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       else:
-        await ctx.send('You don\'t have enough meat for this!')
+        await ctx.send('you don\'t have enough meat for this!')
     else:
-      await ctx.send('You don\'t have enough money for this!')
+      await ctx.send('you don\'t have enough money for this!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1310,10 +1092,10 @@ async def buy_sheep_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_sheep or balances[user] == price_for_sheep:
       sheeps[user] = sheeps[user] + amount if user in sheeps else amount
       balances[user] -= price_for_sheep
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** sheep for `{price_for_sheep} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** sheep for `{price_for_sheep} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} sheeps')
+      await ctx.send(f'you don\'t have enough to buy {amount} sheeps')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1352,10 +1134,10 @@ async def buy_bread_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_bread or balances[user] == price_for_bread:
       bread[user] += amount
       balances[user] -=  price_for_bread
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** bread for `{price_for_bread} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** bread for `{price_for_bread} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send('You don\'t have enough coins for this!')
+      await ctx.send('you don\'t have enough coins for this!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1394,10 +1176,10 @@ async def buy_bowl_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_bowl or balances[user] == price_for_bowl:
       bowls[user] = bowls[user] + amount if user in bowls else amount
       balances[user] -= price_for_bowl
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** bowls for `{price_for_bowl} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** bowls for `{price_for_bowl} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} bowls')
+      await ctx.send(f'you don\'t have enough to buy {amount} bowls')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1436,10 +1218,10 @@ async def buy_rice_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_rice or balances[user] == price_for_rice:
       rices[user] = rices[user] + amount if user in rices else amount
       balances[user] -= price_for_rice
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** rice for `{price_for_rice} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** rice for `{price_for_rice} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} rice')
+      await ctx.send(f'you don\'t have enough to buy {amount} rice')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1478,10 +1260,10 @@ async def buy_pig_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_pigs or balances[user] == price_for_pigs:
       pigs[user] = pigs[user] + amount if user in pigs else amount
       balances[user] -= price_for_pigs
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** pigs for `{price_for_pigs} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** pigs for `{price_for_pigs} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} pig(s)')
+      await ctx.send(f'you don\'t have enough to buy {amount} pig(s)')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1521,12 +1303,12 @@ async def buy_ambulance_subcommand(ctx, amount: int = None):
     if meats[user] > price_for_ambulances or meats[user] == price_for_ambulances:
       ambulances[user] = ambulances[user] + amount if user in ambulances else amount
       meats[user] -= price_for_ambulances
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** ambulances for `{price_for_ambulances} meat`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** ambulances for `{price_for_ambulances} meat`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} ambulances!')
+      await ctx.send(f'you don\'t have enough to buy {amount} ambulances!')
   else:
-    await ctx.send('You don\'t have any meat')
+    await ctx.send('you don\'t have any meat')
 
   print(f'In buy(): Saving ambulances = {ambulances}')
   try: 
@@ -1561,10 +1343,10 @@ async def buy_buffalo_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_buffalos or balances[user] == price_for_buffalos:
       buffalos[user] = buffalos[user] + amount if user in buffalos else amount
       balances[user] -= price_for_buffalos
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** buffalo for `{price_for_buffalos} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** buffalo for `{price_for_buffalos} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} buffalos!')
+      await ctx.send(f'you don\'t have enough to buy {amount} buffalos!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1603,10 +1385,10 @@ async def buy_stove_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_stoves or balances[user] == price_for_stoves:
       stoves[user] = stoves[user] + amount if user in stoves else amount
       balances[user] -= price_for_stoves
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** stoves for `{price_for_stoves} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** stoves for `{price_for_stoves} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} stoves!')
+      await ctx.send(f'you don\'t have enough to buy {amount} stoves!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1645,10 +1427,10 @@ async def buy_chicken_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_uncooked_chickens or balances[user] == price_for_uncooked_chickens:
       uncooked_chickens[user] = uncooked_chickens[user] + amount if user in uncooked_chickens else amount
       balances[user] -= price_for_uncooked_chickens
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** uncooked chickens for `{price_for_uncooked_chickens} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** uncooked chickens for `{price_for_uncooked_chickens} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} uncooked chicken(s)!')
+      await ctx.send(f'you don\'t have enough to buy {amount} uncooked chicken(s)!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1687,10 +1469,10 @@ async def buy_pc_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_lap or balances[user] == price_for_lap:
       pc[user] += amount
       balances[user] -= price_for_lap
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** laptop(s) for `{price_for_lap} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** laptop(s) for `{price_for_lap} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
-      await ctx.send(f'You don\'t have enough to buy {amount} pc(s)!')
+      await ctx.send(f'you don\'t have enough to buy {amount} pc(s)!')
   else:
     print(f'In beg(): No record for {user} found. Creating a new record with a starting balance of {START_BAL}') 
     balances[user] = START_BAL 
@@ -1729,7 +1511,7 @@ async def buy_mooshroom_subcommand(ctx, amount: int = None):
     if balances[user] > price_for_mcow or balances[user] == price_for_mcow:
       mooshroom_cows[user] += amount
       balances[user] -= price_for_mcow
-      embed = discord.Embed(title = 'Purchase Complete', description = f'You bought **{amount}** mooshroom cows for `{price_for_mcow} coins`', color = random.choice(random_colors))
+      embed = discord.Embed(title = 'Purchase Complete', description = f'you bought **{amount}** mooshroom cows for `{price_for_mcow} coins`', color = random.choice(random_colors))
       await ctx.send(embed = embed)
     else:
       await ctx.send('too broke')
@@ -1755,7 +1537,7 @@ async def buy_mooshroom_subcommand(ctx, amount: int = None):
 #============================================================================
 # UPGRADE
 
-@bot.group(pass_context = True)
+@bot.group()
 async def upgrade(ctx):
   if ctx.subcommand_passed is None:
     await ctx.send('Proper Usage: `upgrade [key/shop/power/water/waste/fire/police/health/entertainment/parks]`')
@@ -1810,23 +1592,23 @@ async def upgrade_parks(ctx):
                 wheats[user] -= WHEAT_COST
                 wools[user] -= WOOL_COST
                 citypop[user] += 1001
-                await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Park**__ level is now **{PARK_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
+                await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Park**__ level is now **{PARK_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
                 await asyncio.sleep(1)
-                await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+                await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
               else:
-                await ctx.send('You don\'t have enough wheat for this!')
+                await ctx.send('you don\'t have enough wheat for this!')
             else:
-              await ctx.send('You don\'t have enough wool for this!')
+              await ctx.send('you don\'t have enough wool for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         await ctx.send('ok')
       else:
         await ctx.send('not an option')
     else:
-      await ctx.send('You have reached the maximum level for parks!')
+      await ctx.send('you have reached the maximum level for parks!')
   else:
     await ctx.send('u don\'t have a city')
 
@@ -1901,15 +1683,15 @@ async def upgrade_police(ctx):
               salads[user] -= SALADS_COST
               meats[user] -= MEAT_COST
               citypop[user] += 9331
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Police**__ level is now **{POLICE_LEVEL_USER_IS_UPGRADE_TO}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Police**__ level is now **{POLICE_LEVEL_USER_IS_UPGRADE_TO}**\nGo check in `le city`!')
               await asyncio.sleep(1)
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
             else:
-                await ctx.send('You don\'t have enough meat for this!')
+                await ctx.send('you don\'t have enough meat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -1923,7 +1705,7 @@ async def upgrade_police(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for police!')
+      await ctx.send('you have reached the maximum level for police!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -1991,15 +1773,15 @@ async def upgrade_health(ctx):
               salads[user] -= SALADS_COST
               meats[user] -= MEAT_COST
               citypop[user] += 7819
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Health**__ level is now **{HEALTH_LEVEL_USER_IS_UPGRADE_TO}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Health**__ level is now **{HEALTH_LEVEL_USER_IS_UPGRADE_TO}**\nGo check in `le city`!')
               await asyncio.sleep(1)
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
             else:
-                await ctx.send('You don\'t have enough meat for this!')
+                await ctx.send('you don\'t have enough meat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -2013,7 +1795,7 @@ async def upgrade_health(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for health!')
+      await ctx.send('you have reached the maximum level for health!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -2080,15 +1862,15 @@ async def upgrade_waste(ctx):
               salads[user] -= SALADS_COST
               meats[user] -= MEAT_COST
               citypop[user] += 3142
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Waste**__ level is now **{WASTE_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Waste**__ level is now **{WASTE_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
               await asyncio.sleep(1)
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
             else:
-                await ctx.send('You don\'t have enough meat for this!')
+                await ctx.send('you don\'t have enough meat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -2102,7 +1884,7 @@ async def upgrade_waste(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for waste!')
+      await ctx.send('you have reached the maximum level for waste!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -2168,15 +1950,15 @@ async def upgrade_fire(ctx):
               salads[user] -= SALADS_COST
               wheats[user] -= WHEAT_COST
               citypop[user] += 6231
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Fire**__ level is now **{FIRE_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Fire**__ level is now **{FIRE_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
               await asyncio.sleep(1)
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
             else:
-                await ctx.send('You don\'t have enough wheat for this!')
+                await ctx.send('you don\'t have enough wheat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -2190,7 +1972,7 @@ async def upgrade_fire(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for fire!')
+      await ctx.send('you have reached the maximum level for fire!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -2256,15 +2038,15 @@ async def upgrade_water(ctx):
               salads[user] -= SALADS_COST
               wheats[user] -= WHEAT_COST
               citypop[user] += 2227
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Water**__ level is now **{WATER_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Water**__ level is now **{WATER_LEVEL_USER_UPGRADING_TO}**\nGo check in `le city`!')
               await asyncio.sleep(1)
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
             else:
-                await ctx.send('You don\'t have enough wheat for this!')
+                await ctx.send('you don\'t have enough wheat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -2278,7 +2060,7 @@ async def upgrade_water(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for water!')
+      await ctx.send('you have reached the maximum level for water!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -2344,15 +2126,15 @@ async def upgrade_power(ctx):
               meats[user] -= COST_FOR_MEAT
               salads[user] -= COST_FOR_SALADS
               citypop[user] += 2467
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Power**__ level is now **{LEVEL_USER_IS_UPGRADING_TO}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Power**__ level is now **{LEVEL_USER_IS_UPGRADING_TO}**\nGo check in `le city`!')
               await asyncio.sleep(1)
-              await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+              await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
             else:
-              await ctx.send('You don\'t have enough meat for this!')
+              await ctx.send('you don\'t have enough meat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -2366,7 +2148,7 @@ async def upgrade_power(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for power!')
+      await ctx.send('you have reached the maximum level for power!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -2436,17 +2218,17 @@ async def upgrade_entertainment(ctx):
                 rices[user] -= COST_FOR_LUIUT_RICE
                 salads[user] -= COST_FOR_LUIUT_SALADS
                 citypop[user] += 867
-                await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Entertainment**__ level is now **{LEVEL_USER_IS_UPGRADING_TO}**\nGo check in `le city`!')
+                await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Entertainment**__ level is now **{LEVEL_USER_IS_UPGRADING_TO}**\nGo check in `le city`!')
                 await asyncio.sleep(1)
-                await ctx.send(f'Congratulations {ctx.message.author.mention}! Your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
+                await ctx.send(f'Congratulations {ctx.message.author.mention}! your __**Population**__ is now **{citypop[user]:,d}**\nGo check in `le city`!')
               else:
-                await ctx.send('You don\'t have enough rice for this!')
+                await ctx.send('you don\'t have enough rice for this!')
             else:
-              await ctx.send('You don\'t have enough meat for this!')
+              await ctx.send('you don\'t have enough meat for this!')
           else:
-            await ctx.send('You don\'t have enough coins for this!')
+            await ctx.send('you don\'t have enough coins for this!')
         else:
-          await ctx.send('You don\'t have enough salads for this!')
+          await ctx.send('you don\'t have enough salads for this!')
       elif msg.content.lower() == 'n' or msg.content.lower() == 'N':
         msg = await ctx.send('Cancelling purchase')
         await asyncio.sleep(0.7)
@@ -2460,7 +2242,7 @@ async def upgrade_entertainment(ctx):
       else:
         await ctx.send('not an option ')
     else:
-      await ctx.send('You have reached the maximum level for entertainment!')
+      await ctx.send('you have reached the maximum level for entertainment!')
   else:
     await ctx.send('u don\'t have a city ')
 
@@ -2511,7 +2293,7 @@ async def upgrade_entertainment(ctx):
 #=============================================================================================================
 # REQUIREMENTS
 
-@bot.group(pass_context = True)
+@bot.group()
 async def requirements(ctx):
   if ctx.subcommand_passed is None:
     await ctx.send('Proper Usage: `requirements [medium/advanced]`')
@@ -2531,7 +2313,7 @@ async def requirements_advanced_subcommand(ctx):
 #=============================================================================================================
 # COLLECT
 
-@bot.group(pass_context = True)
+@bot.group()
 async def collect(ctx):
   if ctx.subcommand_passed is None:
     await ctx.send('Proper Usage: `collect [power/water/waste/fire/police/health/entertainment/parks]`')
@@ -2557,20 +2339,20 @@ async def health(ctx):
           buffalos[user] += 1
           health_popz_added = health_lvl[user] * 7819
           HEALTH_REVENUE = health_popz_added * 120
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{HEALTH_REVENUE:,d} coins` of **Health Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{HEALTH_REVENUE:,d} coins` of **Health Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += HEALTH_REVENUE
         else:
           health_popz_added = health_lvl[user] * 7819
           HEALTH_REVENUE = health_popz_added * 120
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{HEALTH_REVENUE:,d} coins` of **Health Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{HEALTH_REVENUE:,d} coins` of **Health Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += HEALTH_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         health.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any health levels!')
+      await ctx.send('you don\'t have any health levels!')
       health.reset_cooldown(ctx)
   else:
     await ctx.send('u dont even have a city')
@@ -2609,20 +2391,20 @@ async def waste(ctx):
           buffalos[user] += 1
           waste_popz_added = waste_lvl[user] * 3142
           WASTE_REVENUE = waste_popz_added * 80
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{WASTE_REVENUE:,d} coins` of **Waste Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{WASTE_REVENUE:,d} coins` of **Waste Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += WASTE_REVENUE
         else:
           waste_popz_added = waste_lvl[user] * 3142
           WASTE_REVENUE = waste_popz_added * 80
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{WASTE_REVENUE:,d} coins` of **Waste Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{WASTE_REVENUE:,d} coins` of **Waste Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += WASTE_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         waste.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any waste levels!')
+      await ctx.send('you don\'t have any waste levels!')
       waste.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2661,20 +2443,20 @@ async def water(ctx):
           buffalos[user] += 1
           water_popz_added = water_lvl[user] * 2227
           WATER_REVENUE = water_popz_added * 60
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{WATER_REVENUE:,d} coins` of **Water Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{WATER_REVENUE:,d} coins` of **Water Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += WATER_REVENUE
         else:
           water_popz_added = water_lvl[user] * 2227
           WATER_REVENUE = water_popz_added * 60
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{WATER_REVENUE:,d} coins` of **Water Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{WATER_REVENUE:,d} coins` of **Water Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += WATER_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         water.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any water levels!')
+      await ctx.send('you don\'t have any water levels!')
       water.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2713,20 +2495,20 @@ async def fire(ctx):
           buffalos[user] += 1
           fire_popz_added = fire_lvl[user] * 6231
           FIRE_REVENUE = fire_popz_added * 110
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{FIRE_REVENUE:,d} coins` of **Fire Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{FIRE_REVENUE:,d} coins` of **Fire Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += FIRE_REVENUE
         else:
           fire_popz_added = fire_lvl[user] * 6231
           FIRE_REVENUE = fire_popz_added * 60
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{FIRE_REVENUE:,d} coins` of **Fire Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{FIRE_REVENUE:,d} coins` of **Fire Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += FIRE_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         fire.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any fire levels!')
+      await ctx.send('you don\'t have any fire levels!')
       fire.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2765,20 +2547,20 @@ async def police(ctx):
           buffalos[user] += 1
           police_popz_added = police_lvl[user] * 9331
           POLICE_REVENUE = police_popz_added * 130
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{POLICE_REVENUE:,d} coins` of **Police Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{POLICE_REVENUE:,d} coins` of **Police Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += POLICE_REVENUE
         else:
           police_popz_added = police_lvl[user] * 9331
           POLICE_REVENUE = police_popz_added * 130
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{POLICE_REVENUE:,d} coins` of **Police Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{POLICE_REVENUE:,d} coins` of **Police Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += POLICE_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         police.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any police levels!')
+      await ctx.send('you don\'t have any police levels!')
       police.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2817,20 +2599,20 @@ async def entertainment(ctx):
           buffalos[user] += 1
           ent_popz_added = entertainment_lvl[user] * 867
           ENTERTAINMENT_REVENUE = ent_popz_added * 35
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{ENTERTAINMENT_REVENUE:,d} coins` of **Entertainment Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{ENTERTAINMENT_REVENUE:,d} coins` of **Entertainment Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += ENTERTAINMENT_REVENUE
         else:
           ent_popz_added = entertainment_lvl[user] * 867
           ENTERTAINMENT_REVENUE = ent_popz_added * 35
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{ENTERTAINMENT_REVENUE:,d} coins` of **Entertainment Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{ENTERTAINMENT_REVENUE:,d} coins` of **Entertainment Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += ENTERTAINMENT_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         entertainment.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any entertainment levels!')
+      await ctx.send('you don\'t have any entertainment levels!')
       entertainment.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2868,20 +2650,20 @@ async def parks(ctx):
           buffalos[user] += 1
           park_popz_added = park_lvl[user] * 1001
           PARK_REVENUE = park_popz_added * 50
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{PARK_REVENUE:,d} coins` of **Park Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{PARK_REVENUE:,d} coins` of **Park Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += PARK_REVENUE
         else:
           park_popz_added = park_lvl[user] * 1001
           PARK_REVENUE = park_popz_added * 50
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{PARK_REVENUE:,d} coins` of **Park Revenue** from your population!', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{PARK_REVENUE:,d} coins` of **Park Revenue** from your population!', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += PARK_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         parks.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any park levels!')
+      await ctx.send('you don\'t have any park levels!')
       parks.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2920,20 +2702,20 @@ async def power(ctx):
           buffalos[user] += 1
           power_popz_added = power_lvl[user] * 2467
           POWER_REVENUE = power_popz_added * 75
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{POWER_REVENUE:,d} coins` of **Power Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{POWER_REVENUE:,d} coins` of **Power Revenue** from your population and 1 :water_buffalo: **Buffalo** HOW TF', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += POWER_REVENUE
         else:
           power_popz_added = power_lvl[user] * 2467
           POWER_REVENUE = power_popz_added * 75
-          embed = discord.Embed(title = 'Collection Complete', description = f'You gained `{POWER_REVENUE:,d} coins` of **Power Revenue** from your population', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Collection Complete', description = f'you gained `{POWER_REVENUE:,d} coins` of **Power Revenue** from your population', color = random.choice(random_colors))
           await ctx.send(embed = embed)
           balances[user] += POWER_REVENUE
       else:
-        await ctx.send('You don\'t have any population lmao')
+        await ctx.send('you don\'t have any population lmao')
         power.reset_cooldown(ctx)
     else:
-      await ctx.send('You don\'t have any power levels!')
+      await ctx.send('you don\'t have any power levels!')
       power.reset_cooldown(ctx)
   else:
     await ctx.send(' u dont even have a city')
@@ -2981,10 +2763,10 @@ async def stew(ctx, arg):
         bowls[user] -= 15
         mushroom_stew[user] += 15
         times_mooshroom[user] += 1
-        embed = discord.Embed(title = f'{ctx.message.author.name}\'s harvest ', description = f"You just recieved <:mushstew:716492699879997530> **15** mushroom stew from your <:mooshroom:716492779391418440> mooshroom cow", color = random.choice(random_colors))
+        embed = discord.Embed(title = f'{ctx.message.author.name}\'s harvest ', description = f"you just recieved <:mushstew:716492699879997530> **15** mushroom stew from your <:mooshroom:716492779391418440> mooshroom cow", color = random.choice(random_colors))
         await ctx.send(embed = embed)   
       else:
-        await ctx.send('You need at least 15 bowls for this!')
+        await ctx.send('you need at least 15 bowls for this!')
         stew.reset_cooldown(ctx)
     else:
       await ctx.send('your <:mooshroom:716492779391418440> mooshroom cow has been used 15 times, making it weak, resulting in its perish')
@@ -3145,9 +2927,9 @@ async def city(ctx):
         embed.add_field(name = '__**Population Boosters**__', value = f':musical_note: **Entertainment**: Lvl: {entertainment_lvl[user]:,d}\n\tPopulation Added: **{ent_pop_added:,d}**\n:island: **Parks**: Lvl: {park_lvl[user]:,d}\n\tPopulation Added: **{park_pop_added:,d}**', inline = False)
         await ctx.send(embed = embed)
     else:
-      await ctx.send('You don\'t have a city! To get one, do `le create`')
+      await ctx.send('you don\'t have a city! To get one, do `le create`')
   else:
-    await ctx.send('You must be in Texas in order to view/create your city')
+    await ctx.send('you must be in Texas in order to view/create your city')
 
 @bot.command()
 async def key(ctx):
@@ -3168,11 +2950,11 @@ async def create(ctx):
 
   if locations[user] == 1:
     if cities[user] == 0:
-      await ctx.send('This will cost you `350000` coins. And it will cost a lot to maintain it.\nYou up for it? `y` or `n`')
+      await ctx.send('This will cost you `350000` coins. And it will cost a lot to maintain it.\nyou up for it? `y` or `n`')
       msg = await bot.wait_for('message', check = lambda m: m.author == ctx.author)
       if msg.content.lower() == 'y' or msg.content.lower() == 'Y':
         if balances[user] > 350000 or balances[user] == 350000:
-          await ctx.send(f'Congratulations {ctx.message.author.mention}! You started off with a **basic city**')
+          await ctx.send(f'Congratulations {ctx.message.author.mention}! you started off with a **basic city**')
           balances[user] -= 350000
           cities[user] += 1
           citypop[user] = 0
@@ -3185,7 +2967,7 @@ async def create(ctx):
     else:
       await ctx.send('don\'t you already have a city?')
   else:
-    await ctx.send('You must be in Texas to create a city!')
+    await ctx.send('you must be in Texas to create a city!')
 
   print(f'In beg(): Saving balances = {balances}')
   try: 
@@ -3341,17 +3123,17 @@ async def give(ctx, member: discord.Member, amount: int):
   primary_id = str(ctx.message.author.id)
   other_id = str(member.id)
   if primary_id not in balances:
-    await ctx.send("You do not have a bank account. To get one, type in `le plead` or `le plead`")
+    await ctx.send("you do not have a bank account. To get one, type in `le plead` or `le plead`")
   elif other_id not in balances:
     await ctx.send("The other party does not have an account")
   elif balances[primary_id] < amount:
-    await ctx.send("You cannot afford this transaction")
+    await ctx.send("you cannot afford this transaction")
   elif member == ctx.message.author:
     await ctx.send('r u rlly going to try to give urself coins')
   else:
     balances[primary_id] -= amount
     balances[other_id] += amount
-    await ctx.send(f"You gave {member.name} {amount:,d} coins now they have {balances[other_id]:,d} and you have {balances[primary_id]:,d}")
+    await ctx.send(f"you gave {member.name} {amount:,d} coins now they have {balances[other_id]:,d} and you have {balances[primary_id]:,d}")
     await member.send(f'{ctx.message.author.name} gave you {amount:,d} coins!')
 
   print(f'In beg(): Saving balances = {balances}')
@@ -3376,10 +3158,10 @@ async def work(ctx):
   if msg.content.lower() == answer:
     random_coins = random.randint(3000, 5000)
     balances[user] += random_coins
-    await ctx.send(f'**Nice job {ctx.message.author.name}!** You earned **{random_coins}** coins from that hour of work')
+    await ctx.send(f'**Nice job {ctx.message.author.name}!** you earned **{random_coins}** coins from that hour of work')
   else:
     random_coins2 = random.randint(500, 1500)
-    await ctx.send(f'**Not good {ctx.message.author.name}!** You only earned **{random_coins2}** coins from that hour of work')
+    await ctx.send(f'**Not good {ctx.message.author.name}!** you only earned **{random_coins2}** coins from that hour of work')
     balances[user] += random_coins2
 
   print(f'In beg(): Saving balances = {balances}')
@@ -3409,7 +3191,7 @@ async def combine(ctx, arg1, arg2):
           salads[user] += 20
           rices[user] -= 9
           cooked_chickens[user] -= 5
-          embed = discord.Embed(title = 'Combine Complete', description = f'You got **20** salads for `5 cooked chicken` and `9 rice`', color = random.choice(random_colors))
+          embed = discord.Embed(title = 'Combine Complete', description = f'you got **20** salads for `5 cooked chicken` and `9 rice`', color = random.choice(random_colors))
           await ctx.send(embed = embed)
         else:
           await ctx.send('you need at least 9 or more rice for this!')
@@ -3462,10 +3244,10 @@ async def rice(ctx):
       embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :tanabata_tree: {wheat} wheat from his :rice: rice", color = random.choice(random_colors))
       await ctx.send(embed = embed)   
     else:
-      await ctx.send('You don\'t have any rice')
+      await ctx.send('you don\'t have any rice')
       rice.reset_cooldown(ctx)
   else:
-    await ctx.send('You don\'t have enough health for this action!')
+    await ctx.send('you don\'t have enough health for this action!')
     rice.reset_cooldown(ctx)
 
   print(f'In sell(): Saving rices = {rices}')
@@ -3504,10 +3286,10 @@ async def sheep(ctx):
       embed = discord.Embed(title = f'{ctx.message.author}\'s harvest', description = f"{ctx.message.author} just recieved :scroll: {wool} wool from his :sheep: sheep", color = random.choice(random_colors))
       await ctx.send(embed = embed)   
     else:
-      await ctx.send('You don\'t have any sheep')
+      await ctx.send('you don\'t have any sheep')
       sheep.reset_cooldown(ctx)
   else:
-    await ctx.send('You don\'t have enough health for this action!')
+    await ctx.send('you don\'t have enough health for this action!')
     sheep.reset_cooldown(ctx)
 
   print(f'In sell(): Saving sheep = {sheeps}')
@@ -3549,10 +3331,10 @@ async def buffalo(ctx):
       embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :cut_of_meat: {meat2} meat and :ear_of_rice: {wheat2} wheat from his :water_buffalo: Buffalos", color = random.choice(random_colors))
       await ctx.send(embed = embed)   
     else:
-      await ctx.send('You don\'t have any buffalos!')
+      await ctx.send('you don\'t have any buffalos!')
       buffalo.reset_cooldown(ctx)
   else:
-    await ctx.send('You don\'t have enough health for this action!')
+    await ctx.send('you don\'t have enough health for this action!')
     buffalo.reset_cooldown(ctx)
 
   print(f'In sell(): Saving buffalos = {buffalos}')
@@ -3598,10 +3380,10 @@ async def pig(ctx):
       embed = discord.Embed(title = f'{ctx.message.author}\'s harvest ', description = f"{ctx.message.author} just recieved :cut_of_meat: {meat} meat from his :pig2: pig(s)", color = random.choice(random_colors))
       await ctx.send(embed = embed)   
     else:
-      await ctx.send('You don\'t have any pigs')
+      await ctx.send('you don\'t have any pigs')
       pig.reset_cooldown(ctx)
   else:
-    await ctx.send('You don\'t have enough health for this!')
+    await ctx.send('you don\'t have enough health for this!')
     pig.reset_cooldown(ctx)
 
   print(f'In sell(): Saving pigs = {pigs}')
@@ -3667,8 +3449,8 @@ async def health1(ctx):
   
   print(f'In health(): Author Id = {ctx.message.author.id}, Author Name = {user}')
   if user in healths:
-    embed = discord.Embed(title = f"{ctx.message.author}'s health :heartpulse:", description = "Your health is deprived everytime you harvest.\nTo regenerate, go to `le pharmacy` to buy meds.\nDose them to regenerate health.", color = random.choice(random_colors))
-    embed.add_field(name = "Your health", value = f'{healths[user]}/100')
+    embed = discord.Embed(title = f"{ctx.message.author}'s health :heartpulse:", description = "your health is deprived everytime you harvest.\nTo regenerate, go to `le pharmacy` to buy meds.\nDose them to regenerate health.", color = random.choice(random_colors))
+    embed.add_field(name = "your health", value = f'{healths[user]}/100')
     await ctx.send(embed = embed)
   else: 
     print(f'In plead(): No record for {user} found. Creating a new record with a starting balance of {START_HEALTH}') 
@@ -3771,22 +3553,22 @@ async def setmembermessage_error(ctx, error):
   if isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `setmembermessage [message]`')
   elif isinstance(error, commands.MissingPermissions):
-    await ctx.send('You don\'t have the perm: `Manage Server`!')
+    await ctx.send('you don\'t have the perm: `Manage Server`!')
     
 @reactionmessage.error
 async def reactionmessage_error(ctx, error):
   if isinstance(error, commands.MissingPermissions):
-    await ctx.send('You don\'t have the perm: `Manage Server`!')
+    await ctx.send('you don\'t have the perm: `Manage Server`!')
   
 @membermessage.error
 async def membermessage_error(ctx, error):
   if isinstance(error, commands.MissingPermissions):
-    await ctx.send('You don\'t have the perm: `Manage Server`!')
+    await ctx.send('you don\'t have the perm: `Manage Server`!')
 
 @setchannelid.error
 async def setchannelid_error(ctx, error):
   if isinstance(error, commands.MissingPermissions):
-    await ctx.send('You don\'t have the perm: `Manage Server`!') 
+    await ctx.send('you don\'t have the perm: `Manage Server`!') 
   elif isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('Proper Usage: `setchannelid [channel id]`')
 
