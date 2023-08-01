@@ -60,7 +60,7 @@ class farm(commands.Cog):
 
 
         if mainbot.locations[user] == 0:
-            embed = discord.Embed(title = f"{ctx.message.author.name}'s California Farm", description = f"`le <crop/animal>` to harvest the animals or crops\n `le shop` for more", color = random.choice(mainbot.random_colors))
+            embed = discord.Embed(title = f"{ctx.message.author.name}'s Farm", description = f"`le <crop/animal>` to harvest the animals or crops\n `le shop` for more", color = random.choice(mainbot.random_colors))
             embed.add_field(name = "Animals [NOT SELLABLE]\n", value = f":sheep: Sheep | {mainbot.sheeps[user]}\n :pig2: Pigs | {mainbot.pigs[user]}\n :water_buffalo: Buffalos | {mainbot.buffalos[user]}\n :hatched_chick: Uncooked Chickens | {mainbot.uncooked_chickens[user]}\n <:mooshroom:716492779391418440> Mooshroom Cows | {mainbot.mooshroom_cows[user]}\n", inline = True)
             embed.add_field(name = "\nCrops [NOT SELLABLE]\n", value = f":rice: Rice | {mainbot.rices[user]}\n", inline = False)
             embed.add_field(name = "\nGoods [SELLABLE]\n", value = f":scroll:  Wool | {mainbot.wools[user]}\n :tanabata_tree: Wheat | {mainbot.wheats[user]}\n :cut_of_meat: Meat | {mainbot.meats[user]}\n :chicken: Chickens | {mainbot.cooked_chickens[user]}\n", inline = False)
@@ -72,7 +72,7 @@ class farm(commands.Cog):
             embed.add_field(name = '\nItems [MISCELLANEOUS]', value = f':bowl_with_spoon: Bowl | {mainbot.bowls[user]}', inline = False)
             await ctx.send(embed=embed)
         else:
-            embed = discord.Embed(title = f"{ctx.message.author.name}'s California Farm", description = f"`le <crop/animal>` to harvest the animals or crops\n `le shop` for more", color = random.choice(mainbot.random_colors))
+            embed = discord.Embed(title = f"{ctx.message.author.name}'s Farm", description = f"`le <crop/animal>` to harvest the animals or crops\n `le shop` for more", color = random.choice(mainbot.random_colors))
             embed.add_field(name = "Animals [NOT SELLABLE]\n", value = f":sheep: Sheep | {mainbot.sheeps[user]}\n :pig2: Pigs | {mainbot.pigs[user]}\n :water_buffalo: Buffalos | {mainbot.buffalos[user]}\n :hatched_chick: Uncooked Chickens | {mainbot.uncooked_chickens[user]}\n <:mooshroom:716492779391418440> Mooshroom Cows | {mainbot.mooshroom_cows[user]}\n", inline = True)
             embed.add_field(name = "\nCrops [NOT SELLABLE]\n", value = f":rice: Rice | {mainbot.rices[user]}\n", inline = False)
             embed.add_field(name = "\nGoods [SELLABLE]\n", value = f":scroll:  Wool | {mainbot.wools[user]}\n :tanabata_tree: Wheat | {mainbot.wheats[user]}\n :cut_of_meat: Meat | {mainbot.meats[user]}\n :chicken: Chickens | {mainbot.cooked_chickens[user]}\n", inline = False)
