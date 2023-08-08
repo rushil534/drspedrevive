@@ -28,7 +28,7 @@ class plead(commands.Cog):
             mainbot.balances[user] = mainbot.START_BAL 
             mainbot.healths[user] = 100
             mainbot.locations[user] = 0
-            await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with {mainbot.START_BAL} coins') 
+            await ctx.send(f'you don\'t have a bank account, I created one for you with {mainbot.START_BAL} coins') 
             self.plead.reset_cooldown(ctx)
 
         mainbot.savefile(mainbot.healths, mainbot.HEALTH_FILE)
