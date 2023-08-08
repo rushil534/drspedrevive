@@ -21,8 +21,7 @@ class balance(commands.Cog):
                 embed = discord.Embed(title=f":moneybag: {ctx.message.author.name}'s balance", description=f"**Bank Account**: {mainbot.balances[user]:,d}/ꝏ", color = random.choice(mainbot.random_colors))
                 await ctx.send(embed=embed)
             else:
-                mainbot.balances[user] = 100
-                await ctx.send('You didnt have an account so i made you one with a start of 100 coins')
+                await ctx.send(f'{mainbot.NO_BANK_ACC}')
         else:
             if str(member.id) in mainbot.balances:
                 embed = discord.Embed(title=f":moneybag: {member.name}'s balance", description=f"**Bank Account**: {mainbot.balances[str(member.id)]:,d}/ꝏ", color = random.choice(mainbot.random_colors))
