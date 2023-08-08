@@ -51,6 +51,7 @@ class cook(commands.Cog):
                 self.cook_chicken_subcommand.reset_cooldown(ctx)
         else:
             await ctx.send('You don\'t have enough health for this action!')
+            self.cook_chicken_subcommand.reset_cooldown(ctx)
 
         mainbot.savefile(mainbot.healths, mainbot.HEALTH_FILE)
         mainbot.savefile(mainbot.stoves, mainbot.STOVES_FILE)
