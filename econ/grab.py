@@ -24,17 +24,16 @@ class grab(commands.Cog):
             mainbot.balances[user] += AIRDROP_LOOT
             await ctx.send(embed=embed)
         else:
-            print(f'In buy(): No record for {user} found. Creating a new record with a starting balance of {mainbot.START_BAL}') 
-            mainbot.balances[user] = mainbot.START_BAL 
-            await ctx.send(f'hey you don\'t have a bank account yet. I just created one for you and started you off with le {mainbot.START_BAL}') 
-
+            await ctx.send(f'{mainbot.NO_BANK_ACC}')
+            self.grab.reset_cooldown(ctx)
+            
         mainbot.savefile(mainbot.balances, mainbot.BALANCES_FILE)
 
     @grab.error
     async def grab_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
             m, s = divmod(error.retry_after, 60)
-            await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to grab another airdrop ')
+            await ctx.send(f'wait **{round(m)} minutes and {round(s)} seconds** to grab another airdrop')
             return
 
 async def setup(bot):
