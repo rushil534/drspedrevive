@@ -55,6 +55,20 @@ class delete(commands.Cog):
         except Exception:
             await ctx.send('an error occured')
 
+    @delete.command(name = 'thread')
+    @commands.guild_only()
+    @has_permissions(manage_threads = True)
+    async def delete_thread_subcommand(self, ctx, thread: discord.Thread = None):
+        if thread == None:
+            await ctx.send('i need a thread to delete')
+            return
+
+        try:
+            await thread.delete()
+            await ctx.send(f'Thread `{thread.name}` deleted!')
+        except Exception:
+            await ctx.send('an error occured')
+
     @delete_category_subcommand.error
     async def delete_category_subcommand_error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
@@ -75,6 +89,13 @@ class delete(commands.Cog):
             await ctx.send('You don\'t have the perm: `Manage Roles`!')
         if isinstance(error, commands.BadArgument):
             await ctx.send('that role is invalid')
+
+    @delete_thread_subcommand.error
+    async def delete_thread_subcommand_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send('You don\'t have the perm: `Manage Threads`!')
+        if isinstance(error, commands.BadArgument):
+            await ctx.send('that thread is invalid')
 
 async def setup(bot):
     await bot.add_cog(delete(bot))
